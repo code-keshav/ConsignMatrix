@@ -1,0 +1,661 @@
+@using Base.Enum.Consignment
+@using System.Text.Json
+@model Web.Areas.Consignment.ViewModels.Trip.TripDetailVm
+
+@{
+    ViewData["Title"] = "Trip Detail";
+    var statusBadge = Model.TripStatus switch
+    {
+        TripStatus.Scheduled => "badge bg-warning text-dark fs-6",
+        TripStatus.InTransit => "badge bg-primary fs-6",
+        TripStatus.Completed => "badge bg-success fs-6",
+        TripStatus.Cancelled => "badge bg-secondary fs-6",
+        _ => "badge bg-secondary fs-6"
+    };
+
+    var isSender = Model.FromBranchId == Model.CurrentBranchId;
+    var isReceiverOnly = Model.ToBranchId == Model.CurrentBranchId && Model.FromBranchId != Model.CurrentBranchId;
+    var isDelivery = Model.TripType == TripType.Delivery;
+
+    var showSenderActions = isSender && Model.TripStatus == TripStatus.Scheduled;
+    var showReceiveVerify = isReceiverOnly && !isDelivery && Model.TripStatus == TripStatus.InTransit;
+    var showManageDeliveries = isSender && isDelivery && Model.TripStatus == TripStatus.InTransit;
+
+    var manifestJson = JsonSerializer.Serialize(Model.Manifest, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    });
+}
+
+<div id="trip-detail-app" v-cloak>
+    <!-- Header Card -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 class="mb-0">Trip: @Model.TripNumber</h5>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="@statusBadge">@Model.TripStatus</span>
+
+                @if (showSenderActions)
+                {
+                    <button class="btn btn-sm btn-primary" @@click="startTrip">
+                        <i class="fa fa-play"></i> Start Trip
+                    </button>
+                    <button class="btn btn-sm btn-danger" @@click="cancelTrip">
+                        <i class="fa fa-times"></i> Cancel
+                    </button>
+                }
+
+                @if (showReceiveVerify)
+                {
+                    <button class="btn btn-sm btn-info" @@click="enterReceive" v-if="mode !== 'receive'">
+                        <i class="fa fa-barcode"></i> Receive &amp; Verify
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" @@click="exitMode" v-if="mode === 'receive'">
+                        <i class="fa fa-arrow-left"></i> Exit Verify
+                    </button>
+                    <button class="btn btn-sm btn-success"
+                            :disabled="receivePending > 0"
+                            @@click="completeTrip"
+                            v-if="mode === 'receive'">
+                        <i class="fa fa-check"></i> Complete Trip
+                    </button>
+                }
+
+                @if (showManageDeliveries)
+                {
+                    <button class="btn btn-sm btn-info" @@click="enterDeliver" v-if="mode !== 'deliver'">
+                        <i class="fa fa-truck"></i> Manage Deliveries
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" @@click="exitMode" v-if="mode === 'deliver'">
+                        <i class="fa fa-arrow-left"></i> Exit
+                    </button>
+                    <button class="btn btn-sm btn-success"
+                            :disabled="deliverPending > 0"
+                            @@click="completeTrip"
+                            v-if="mode === 'deliver'">
+                        <i class="fa fa-check"></i> Complete Delivery Trip
+                    </button>
+                }
+
+                <a href="/Consignment/Trip/Index" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trip Info -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Trip Type</label>
+                    <span>@Model.TripType</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">From Branch</label>
+                    <span>@Model.FromBranchName</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">To Branch</label>
+                    <span>@Model.ToBranchName</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Status</label>
+                    <span class="@statusBadge">@Model.TripStatus</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Driver</label>
+                    <span>@Model.DriverName</span>
+                    <small class="text-muted d-block">@Model.DriverPhone</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Vehicle</label>
+                    <span>@Model.VehicleNumber</span>
+                    <small class="text-muted d-block">@Model.VehicleType</small>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Scheduled Departure</label>
+                    <span>@(Model.ScheduledDeparture?.ToString("yyyy-MM-dd HH:mm") ?? "-")</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Actual Departure</label>
+                    <span>@(Model.ActualDeparture?.ToString("yyyy-MM-dd HH:mm") ?? "-")</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Total Consignments</label>
+                    <span>@Model.TotalConsignments</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Total Weight (kg)</label>
+                    <span>@Model.TotalWeight.ToString("F2")</span>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="fw-bold d-block">Created</label>
+                    <span>@Model.RecDate.ToString("yyyy-MM-dd HH:mm")</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <div class="col-md-12 mb-3">
+                        <label class="fw-bold d-block">Notes</label>
+                        <span>@Model.Notes</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Receive & Verify banner -->
+    <div v-if="mode === 'receive'" class="card shadow-sm mb-3 border-info">
+        <div class="card-header bg-info-subtle d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6 class="mb-0"><i class="fa fa-barcode"></i> Receive &amp; Verify</h6>
+            <div class="fw-semibold">
+                <span class="text-success">{{ receiveDone }} verified</span>
+                · <span class="text-warning">{{ receivePending }} pending</span>
+                · <span class="text-muted">{{ manifest.length }} total</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <label class="form-label">Scan or type tracking number</label>
+                    <input type="text"
+                           class="form-control"
+                           v-model="scanInput"
+                           @@keyup.enter="scanSubmit"
+                           ref="scanInputRef"
+                           placeholder="TRK..."
+                           :disabled="busy"/>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary" @@click="scanSubmit" :disabled="busy || !scanInput.trim()">
+                        <i class="fa fa-check"></i> Mark Received
+                    </button>
+                </div>
+            </div>
+            <small class="text-muted">A successful scan marks the item as Received. Use the per-row buttons to mark Damaged or Missing.</small>
+        </div>
+    </div>
+
+    <!-- Manage Deliveries banner -->
+    <div v-if="mode === 'deliver'" class="card shadow-sm mb-3 border-info">
+        <div class="card-header bg-info-subtle d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h6 class="mb-0"><i class="fa fa-truck"></i> Manage Deliveries</h6>
+            <div class="fw-semibold">
+                <span class="text-success">{{ deliveredCount }} delivered</span>
+                · <span class="text-danger">{{ failedCount }} failed</span>
+                · <span class="text-warning">{{ deliverPending }} pending</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manifest -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="fa fa-list"></i> Consignment Manifest ({{ manifest.length }})</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                    <tr>
+                        <th>SN</th>
+                        <th>Tracking #</th>
+                        <th>Sender</th>
+                        <th>Receiver</th>
+                        <th>Destination</th>
+                        <th>Wt (kg)</th>
+                        <th>Pkgs</th>
+                        <th>Status</th>
+                        <th v-if="mode !== 'view'">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <template v-for="(item, idx) in manifest" :key="item.consignmentId">
+                        <tr>
+                            <td>{{ idx + 1 }}</td>
+                            <td>
+                                <a :href="'/Consignment/Consignment/Detail/' + item.consignmentId">
+                                    <strong>{{ item.trackingNumber }}</strong>
+                                </a>
+                            </td>
+                            <td>{{ item.senderName }}</td>
+                            <td>{{ item.receiverName }}</td>
+                            <td>{{ item.destinationBranchName }}</td>
+                            <td>{{ item.chargeableWeight.toFixed(2) }}</td>
+                            <td>{{ item.packageCount }}</td>
+                            <td>
+                                <span :class="statusBadgeClass(item.currentStatus)">
+                                    {{ statusLabel(item.currentStatus) }}
+                                </span>
+                            </td>
+                            <td v-if="mode === 'receive'">
+                                <div v-if="item.currentStatus === STATUS.InTransit" class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success"
+                                            :disabled="busy"
+                                            @@click="markItem(item.consignmentId, 1)"
+                                            title="Received">
+                                        <i class="fa fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-warning"
+                                            :disabled="busy"
+                                            @@click="markItem(item.consignmentId, 2)"
+                                            title="Damaged">
+                                        <i class="fa fa-triangle-exclamation"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger"
+                                            :disabled="busy"
+                                            @@click="markItem(item.consignmentId, 3)"
+                                            title="Missing">
+                                        <i class="fa fa-ban"></i>
+                                    </button>
+                                </div>
+                                <span v-else class="text-muted small">Done</span>
+                            </td>
+                            <td v-if="mode === 'deliver'">
+                                <div v-if="item.currentStatus === STATUS.OutForDelivery" class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-success"
+                                            :disabled="busy"
+                                            @@click="openDeliver(item.consignmentId)">
+                                        <i class="fa fa-check"></i> Delivered
+                                    </button>
+                                    <button class="btn btn-outline-danger"
+                                            :disabled="busy"
+                                            @@click="openFail(item.consignmentId)">
+                                        <i class="fa fa-xmark"></i> Failed
+                                    </button>
+                                </div>
+                                <span v-else-if="item.currentStatus === STATUS.Delivered" class="text-success small fw-semibold">
+                                    Delivered
+                                </span>
+                                <span v-else-if="item.currentStatus === STATUS.DeliveryAttempted" class="text-danger small fw-semibold">
+                                    Attempted
+                                </span>
+                                <span v-else class="text-muted small">—</span>
+                            </td>
+                        </tr>
+                        <!-- Inline Delivered form -->
+                        <tr v-if="mode === 'deliver' && showDeliverFor === item.consignmentId">
+                            <td :colspan="9" class="bg-light">
+                                <div class="row g-2 p-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label small mb-1">Receiver name *</label>
+                                        <input type="text" class="form-control form-control-sm" v-model="deliverForm.receiverName" placeholder="Who received?"/>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label small mb-1">Remarks</label>
+                                        <input type="text" class="form-control form-control-sm" v-model="deliverForm.remarks" placeholder="Optional note"/>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end gap-2">
+                                        <button class="btn btn-sm btn-success" :disabled="busy" @@click="submitDelivered(item.consignmentId)">
+                                            <i class="fa fa-check"></i> Save
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" :disabled="busy" @@click="closeForms">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Inline Failed form -->
+                        <tr v-if="mode === 'deliver' && showFailFor === item.consignmentId">
+                            <td :colspan="9" class="bg-light">
+                                <div class="row g-2 p-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label small mb-1">Fail reason *</label>
+                                        <select class="form-control form-control-sm" v-model="failForm.failReason">
+                                            <option v-for="r in failReasons" :key="r.value" :value="r.value">{{ r.label }}</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label small mb-1">Remarks</label>
+                                        <input type="text" class="form-control form-control-sm" v-model="failForm.remarks" placeholder="Optional note"/>
+                                    </div>
+                                    <div class="col-md-3 d-flex align-items-end gap-2">
+                                        <button class="btn btn-sm btn-danger" :disabled="busy" @@click="submitFailed(item.consignmentId)">
+                                            <i class="fa fa-xmark"></i> Save
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" :disabled="busy" @@click="closeForms">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr v-if="manifest.length === 0">
+                        <td colspan="9" class="text-center text-muted py-3">No consignments in manifest.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    [v-cloak] { display: none; }
+</style>
+
+@section Scripts {
+    <script src="~/dist/js/vue-prod-3.4.27.min.js"></script>
+    <script>
+        const TRIP_ID = @Model.Id;
+        const TRIP_STATUS = @((int)Model.TripStatus);
+        const TRIP_TYPE = @((int)Model.TripType);
+        const FROM_BRANCH_ID = @Model.FromBranchId;
+        const TO_BRANCH_ID = @Model.ToBranchId;
+        const CURRENT_BRANCH_ID = @Model.CurrentBranchId;
+        const INITIAL_MANIFEST = @Html.Raw(manifestJson);
+
+        const { createApp, ref, computed, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                const STATUS = {
+                    InTransit: 9,
+                    ReceivedAtDestination: 12,
+                    OutForDelivery: 13,
+                    DeliveryAttempted: 14,
+                    Delivered: 15,
+                    Damaged: 19,
+                    Lost: 20,
+                };
+
+                const mode = ref('view');
+                const manifest = ref(INITIAL_MANIFEST.map(m => ({ ...m })));
+                const scanInput = ref('');
+                const scanInputRef = ref(null);
+                const busy = ref(false);
+                const showDeliverFor = ref(null);
+                const showFailFor = ref(null);
+                const deliverForm = ref({ receiverName: '', remarks: '' });
+                const failForm = ref({ failReason: 1, remarks: '' });
+
+                const failReasons = [
+                    { value: 1, label: 'Customer Not Available' },
+                    { value: 2, label: 'Address Not Found' },
+                    { value: 3, label: 'Customer Refused' },
+                    { value: 4, label: 'Wrong Address' },
+                    { value: 5, label: 'Access Restricted' },
+                    { value: 6, label: 'Weather Conditions' },
+                    { value: 7, label: 'Other' },
+                ];
+
+                const receivePending = computed(() =>
+                    manifest.value.filter(m => m.currentStatus === STATUS.InTransit).length);
+                const receiveDone = computed(() =>
+                    manifest.value.filter(m =>
+                        m.currentStatus === STATUS.ReceivedAtDestination ||
+                        m.currentStatus === STATUS.Damaged ||
+                        m.currentStatus === STATUS.Lost).length);
+                const deliverPending = computed(() =>
+                    manifest.value.filter(m => m.currentStatus === STATUS.OutForDelivery).length);
+                const deliveredCount = computed(() =>
+                    manifest.value.filter(m => m.currentStatus === STATUS.Delivered).length);
+                const failedCount = computed(() =>
+                    manifest.value.filter(m => m.currentStatus === STATUS.DeliveryAttempted).length);
+
+                function statusLabel(s) {
+                    const map = {
+                        [STATUS.InTransit]: 'In Transit',
+                        [STATUS.ReceivedAtDestination]: 'Received',
+                        [STATUS.OutForDelivery]: 'Out for Delivery',
+                        [STATUS.DeliveryAttempted]: 'Attempt Failed',
+                        [STATUS.Delivered]: 'Delivered',
+                        [STATUS.Damaged]: 'Damaged',
+                        [STATUS.Lost]: 'Missing',
+                    };
+                    return map[s] || '—';
+                }
+
+                function statusBadgeClass(s) {
+                    const map = {
+                        [STATUS.InTransit]: 'bg-warning text-dark',
+                        [STATUS.ReceivedAtDestination]: 'bg-success',
+                        [STATUS.OutForDelivery]: 'bg-primary',
+                        [STATUS.DeliveryAttempted]: 'bg-danger',
+                        [STATUS.Delivered]: 'bg-success',
+                        [STATUS.Damaged]: 'bg-danger',
+                        [STATUS.Lost]: 'bg-secondary',
+                    };
+                    return 'badge ' + (map[s] || 'bg-light text-dark');
+                }
+
+                function updateItemStatus(consignmentId, newStatus) {
+                    const idx = manifest.value.findIndex(m => m.consignmentId === consignmentId);
+                    if (idx >= 0) manifest.value[idx].currentStatus = newStatus;
+                }
+
+                function enterReceive() {
+                    mode.value = 'receive';
+                    nextTick(() => {
+                        if (scanInputRef.value) scanInputRef.value.focus();
+                    });
+                }
+
+                function enterDeliver() {
+                    mode.value = 'deliver';
+                }
+
+                function exitMode() {
+                    mode.value = 'view';
+                    scanInput.value = '';
+                    showDeliverFor.value = null;
+                    showFailFor.value = null;
+                }
+
+                async function scanSubmit() {
+                    const q = (scanInput.value || '').trim().toLowerCase();
+                    if (!q) return;
+                    const item = manifest.value.find(m => (m.trackingNumber || '').toLowerCase() === q);
+                    if (!item) {
+                        notify.error('Tracking number not in this trip\'s manifest.');
+                        return;
+                    }
+                    if (item.currentStatus !== STATUS.InTransit) {
+                        notify.error('This consignment has already been processed.');
+                        return;
+                    }
+                    await markItem(item.consignmentId, 1);
+                    scanInput.value = '';
+                    nextTick(() => {
+                        if (scanInputRef.value) scanInputRef.value.focus();
+                    });
+                }
+
+                async function markItem(consignmentId, action) {
+                    if (busy.value) return;
+                    busy.value = true;
+                    try {
+                        const res = await fetch('/Consignment/Trip/ReceiveItem', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                tripId: TRIP_ID,
+                                consignmentId,
+                                action,
+                                remarks: '',
+                            }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            const newStatus = action === 1 ? STATUS.ReceivedAtDestination
+                                : action === 2 ? STATUS.Damaged
+                                : STATUS.Lost;
+                            updateItemStatus(consignmentId, newStatus);
+                            notify.success(data.message);
+                        } else {
+                            notify.error(data.message);
+                        }
+                    } catch (e) {
+                        notify.error(e.message);
+                    }
+                    busy.value = false;
+                }
+
+                function openDeliver(consignmentId) {
+                    showDeliverFor.value = consignmentId;
+                    showFailFor.value = null;
+                    deliverForm.value = { receiverName: '', remarks: '' };
+                }
+
+                function openFail(consignmentId) {
+                    showFailFor.value = consignmentId;
+                    showDeliverFor.value = null;
+                    failForm.value = { failReason: 1, remarks: '' };
+                }
+
+                function closeForms() {
+                    showDeliverFor.value = null;
+                    showFailFor.value = null;
+                }
+
+                async function submitDelivered(consignmentId) {
+                    if (!deliverForm.value.receiverName.trim()) {
+                        notify.error('Receiver name is required.');
+                        return;
+                    }
+                    if (busy.value) return;
+                    busy.value = true;
+                    try {
+                        const res = await fetch('/Consignment/Trip/MarkDelivered', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                tripId: TRIP_ID,
+                                consignmentId,
+                                receiverName: deliverForm.value.receiverName,
+                                remarks: deliverForm.value.remarks,
+                            }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            updateItemStatus(consignmentId, STATUS.Delivered);
+                            closeForms();
+                            notify.success(data.message);
+                        } else {
+                            notify.error(data.message);
+                        }
+                    } catch (e) {
+                        notify.error(e.message);
+                    }
+                    busy.value = false;
+                }
+
+                async function submitFailed(consignmentId) {
+                    if (busy.value) return;
+                    busy.value = true;
+                    try {
+                        const res = await fetch('/Consignment/Trip/MarkDeliveryFailed', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                tripId: TRIP_ID,
+                                consignmentId,
+                                failReason: parseInt(failForm.value.failReason, 10),
+                                remarks: failForm.value.remarks,
+                            }),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            updateItemStatus(consignmentId, STATUS.DeliveryAttempted);
+                            closeForms();
+                            notify.success(data.message);
+                        } else {
+                            notify.error(data.message);
+                        }
+                    } catch (e) {
+                        notify.error(e.message);
+                    }
+                    busy.value = false;
+                }
+
+                function startTrip() {
+                    notify.confirm('Start this trip? The vehicle will depart.', async () => {
+                        try {
+                            const res = await fetch('/Consignment/Trip/Start?id=' + TRIP_ID, { method: 'POST' });
+                            const data = await res.json();
+                            if (data.success) {
+                                notify.success(data.message);
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                notify.error(data.message);
+                            }
+                        } catch (e) {
+                            notify.error(e.message);
+                        }
+                    });
+                }
+
+                function cancelTrip() {
+                    notify.confirm('Cancel this trip? Consignments will be reverted to Bagged status.', async () => {
+                        try {
+                            const res = await fetch('/Consignment/Trip/Cancel?id=' + TRIP_ID, { method: 'POST' });
+                            const data = await res.json();
+                            if (data.success) {
+                                notify.success(data.message);
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                notify.error(data.message);
+                            }
+                        } catch (e) {
+                            notify.error(e.message);
+                        }
+                    });
+                }
+
+                function completeTrip() {
+                    notify.confirm('Mark this trip as completed?', async () => {
+                        try {
+                            const res = await fetch('/Consignment/Trip/Complete?id=' + TRIP_ID, { method: 'POST' });
+                            const data = await res.json();
+                            if (data.success) {
+                                notify.success(data.message);
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                notify.error(data.message);
+                            }
+                        } catch (e) {
+                            notify.error(e.message);
+                        }
+                    });
+                }
+
+                return {
+                    STATUS,
+                    mode,
+                    manifest,
+                    scanInput,
+                    scanInputRef,
+                    busy,
+                    showDeliverFor,
+                    showFailFor,
+                    deliverForm,
+                    failForm,
+                    failReasons,
+                    receivePending,
+                    receiveDone,
+                    deliverPending,
+                    deliveredCount,
+                    failedCount,
+                    statusLabel,
+                    statusBadgeClass,
+                    enterReceive,
+                    enterDeliver,
+                    exitMode,
+                    scanSubmit,
+                    markItem,
+                    openDeliver,
+                    openFail,
+                    closeForms,
+                    submitDelivered,
+                    submitFailed,
+                    startTrip,
+                    cancelTrip,
+                    completeTrip,
+                };
+            },
+        }).mount('#trip-detail-app');
+    </script>
+}

@@ -1,0 +1,41 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Quick Banking</title>
+    <!-- CSS files -->
+    <link rel="stylesheet" href="~/css/adminlte.min.css"/>
+    <link rel="stylesheet" href="~/icons/bootstrap-icon.min.css"/>
+    <link href="~/icons/all.min.css" rel="stylesheet"/>
+    <link href="~/dist/css/toastr.min.css" rel="stylesheet"/>
+    <link href="~/css/custom.css?1684106062" rel="stylesheet"/>
+
+    <style>
+        @@import url('https://rsms.me/inter/inter.css');
+
+        :root {
+            --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+        }
+
+        body {
+            font-feature-settings: "cv03", "cv04", "cv11";
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class=" d-flex flex-column">
+@RenderBody()
+<script src="~/dist/js/jquery-3.7.1.min.js"></script>
+<script src="~/dist/js/jquery/jQuery.js"></script>
+<script src="~/dist/js/bootstrap.min.js"></script>
+<script src="~/icons/all.min.js"></script>
+<script src="~/js/adminlte.min.js"></script>
+
+<partial name="Partials/_NotificationView" />
+<partial name="Partials/_SweetAlertConfig" />
+
+@RenderSection("Scripts", required: false)
+</body>
+</html>

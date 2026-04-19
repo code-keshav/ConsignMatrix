@@ -1,0 +1,159 @@
+@model Web.Areas.Admin.ViewModels.VehicleAssignmentCreateVm
+
+@{
+    ViewData["Title"] = "Create Vehicle Assignment";
+    Layout = "_Layout";
+}
+
+<div id="assignment-app" v-cloak>
+    <form method="post" asp-action="Create" asp-controller="VehicleAssignment" asp-area="Admin">
+        <div class="card col-12">
+            <h3 class="card-header">New Vehicle Assignment</h3>
+            <div class="card-body">
+                <!-- Vehicle Selection -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-label required">Vehicle</label>
+                            @if (Model.IsVehicleReadonly)
+                            {
+                                <input type="text" class="form-control" value="@Model.VehicleNumber" readonly/>
+                                <input type="hidden" name="VehicleId" value="@Model.VehicleId"/>
+                                <input type="hidden" name="IsVehicleReadonly" value="true"/>
+                            }
+                            else
+                            {
+                                <select name="VehicleId" class="form-control" v-model="vehicleId" v-on:change="onVehicleChange" required>
+                                    <option value="">-- Select Vehicle --</option>
+                                    @foreach (var v in Model.Vehicles)
+                                    {
+                                        <option value="@v.Id">@v.VehicleNumber</option>
+                                    }
+                                </select>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Rows -->
+                <div v-if="vehicleId">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Assignments</h5>
+                        <button type="button" class="btn btn-sm btn-success" v-on:click="addRow">
+                            <i class="fa fa-plus"></i> Add Row
+                        </button>
+                    </div>
+
+                    <div v-if="rows.length === 0" class="text-muted text-center py-3">
+                        No assignment rows. Click "Add Row" to start.
+                    </div>
+
+                    <table v-if="rows.length > 0" class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Assignment Type</th>
+                            <th>Assigned From</th>
+                            <th>Assigned To</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="(row, index) in rows" :key="index">
+                            <td>
+                                <select :name="'Rows[' + index + '].EmployeeId'" class="form-control" v-model="row.employeeId" required>
+                                    <option value="">-- Select Employee --</option>
+                                    <option v-for="emp in employees" :key="emp.id" :value="emp.id">
+                                        {{ emp.name }} ({{ emp.code }})
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <select :name="'Rows[' + index + '].AssignmentType'" class="form-control" v-model="row.assignmentType" required>
+                                    <option value="1">Driver</option>
+                                    <option value="2">Supporting Worker</option>
+                                    <option value="3">Helper</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="date" :name="'Rows[' + index + '].AssignedFrom'" class="form-control" v-model="row.assignedFrom" required/>
+                            </td>
+                            <td>
+                                <input type="date" :name="'Rows[' + index + '].AssignedTo'" class="form-control" v-model="row.assignedTo"/>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger" v-on:click="removeRow(index)">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary" :disabled="rows.length === 0">Create</button>
+                <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <script src="~/dist/js/vue-global-3.4.27.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    vehicleId: '@(Model.VehicleId?.ToString() ?? "")',
+                    isReadonly: @(Model.IsVehicleReadonly ? "true" : "false"),
+                    employees: [],
+                    rows: []
+                }
+            },
+            mounted() {
+                if (this.vehicleId) {
+                    this.fetchEmployees();
+                }
+            },
+            watch: {
+                vehicleId(newVal) {
+                    if (newVal) {
+                        this.fetchEmployees();
+                    } else {
+                        this.employees = [];
+                        this.rows = [];
+                    }
+                }
+            },
+            methods: {
+                onVehicleChange() {
+                    this.rows = [];
+                },
+                async fetchEmployees() {
+                    try {
+                        const response = await fetch(`/Admin/VehicleAssignment/GetEmployeesByVehicle?vehicleId=${this.vehicleId}`);
+                        this.employees = await response.json();
+                    } catch (err) {
+                        console.error('Failed to load employees', err);
+                        this.employees = [];
+                    }
+                },
+                addRow() {
+                    const today = new Date().toISOString().split('T')[0];
+                    this.rows.push({
+                        employeeId: '',
+                        assignmentType: '3',
+                        assignedFrom: today,
+                        assignedTo: ''
+                    });
+                },
+                removeRow(index) {
+                    this.rows.splice(index, 1);
+                }
+            }
+        }).mount('#assignment-app');
+    </script>
+}

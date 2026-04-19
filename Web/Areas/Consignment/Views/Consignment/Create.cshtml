@@ -1,0 +1,812 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Consignment.ConsignmentCreateVm
+
+@{
+    ViewBag.Title = "New Consignment";
+    Layout = "_Layout";
+}
+
+<div id="consignment-app">
+    <div class="card col-12">
+        <h5 class="card-header">New Consignment</h5>
+        <div class="card-body">
+
+            <!-- Sender Section -->
+            <h6 class="fw-bold mb-3">Sender Information</h6>
+            <div class="row w-full">
+                <div class="d-flex flex-row gap-2 mb-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Search Existing Customer</label>
+                        <input type="text" class="form-control" v-model="senderSearch" v-on:input="searchSender" placeholder="Name or Phone"/>
+                        <div v-if="senderResults.length" class="list-group position-absolute" style="z-index:100; max-height:200px; overflow-y:auto;">
+                            <a href="#" class="list-group-item list-group-item-action" v-for="c in senderResults" v-on:click.prevent="selectSender(c)">
+                                {{ c.name }} - {{ c.phoneNo }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-w-4 form-group" v-if="selectedSender">
+                        <label class="form-label">Selected Sender</label>
+                        <p class="form-control-plaintext fw-bold">
+                            {{ selectedSender.name }} ({{ selectedSender.phoneNo }})
+                            <a href="#" v-on:click.prevent="editCustomer('sender', selectedSender.id)" class="ms-1 text-primary" title="Edit Customer">
+                                <i class="fa fa-pencil fa-sm"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-w-4 form-group" v-if="selectedSender && senderAddresses.length && !senderAddingNewAddress">
+                        <label class="form-label required">Sender Address</label>
+                        <select class="form-control" v-model="form.senderAddressId">
+                            <option value="">-- Select Address --</option>
+                            <option v-for="a in senderAddresses" :value="a.id">{{ a.addressLine1 }}, {{ a.city }} - {{ a.pinCode }}</option>
+                        </select>
+                        <div class="d-flex gap-2 mt-1">
+                            <a href="#" v-on:click.prevent="senderAddingNewAddress = true; form.senderAddressId = null" class="text-primary small d-inline-block">
+                                <i class="fa fa-plus"></i> Add New
+                            </a>
+                            <a href="#" v-if="form.senderAddressId" v-on:click.prevent="editAddress('sender', form.senderAddressId)" class="text-primary small d-inline-block">
+                                <i class="fa fa-pencil fa-sm"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- New address for existing sender -->
+                <div v-if="selectedSender && senderAddingNewAddress">
+                    <p class="text-muted small mb-2">
+                        New address for {{ selectedSender.name }}:
+                        <a href="#" v-on:click.prevent="cancelSenderNewAddress" class="text-danger ms-2">Cancel</a>
+                    </p>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Address Line 1</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.addressLine1"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">City</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.city"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">State</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.state"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Pin Code</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.pinCode"/>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!selectedSender">
+                    <p class="text-muted small mb-2">Or enter new sender details:</p>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Name</label>
+                            <input type="text" class="form-control" v-model="form.senderName"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Phone</label>
+                            <input type="text" class="form-control" v-model="form.senderPhone"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Email</label>
+                            <input type="text" class="form-control" v-model="form.senderEmail"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Customer Type</label>
+                            <select class="form-control" v-model="form.senderCustomerType">
+                                <option value="1">Individual</option>
+                                <option value="2">Business</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Address Line 1</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.addressLine1"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">City</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.city"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">State</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.state"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Pin Code</label>
+                            <input type="text" class="form-control" v-model="form.newSenderAddress.pinCode"/>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="selectedSender" class="mb-2">
+                    <a href="#" v-on:click.prevent="clearSender" class="text-danger small">Clear Sender</a>
+                </div>
+            </div>
+
+            <hr/>
+
+            <!-- Receiver Section -->
+            <h6 class="fw-bold mb-3">Receiver Information</h6>
+            <div class="row w-full">
+                <div class="d-flex flex-row gap-2 mb-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Search Existing Customer</label>
+                        <input type="text" class="form-control" v-model="receiverSearch" v-on:input="searchReceiver" placeholder="Name or Phone"/>
+                        <div v-if="receiverResults.length" class="list-group position-absolute" style="z-index:100; max-height:200px; overflow-y:auto;">
+                            <a href="#" class="list-group-item list-group-item-action" v-for="c in receiverResults" v-on:click.prevent="selectReceiver(c)">
+                                {{ c.name }} - {{ c.phoneNo }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-w-4 form-group" v-if="selectedReceiver">
+                        <label class="form-label">Selected Receiver</label>
+                        <p class="form-control-plaintext fw-bold">
+                            {{ selectedReceiver.name }} ({{ selectedReceiver.phoneNo }})
+                            <a href="#" v-on:click.prevent="editCustomer('receiver', selectedReceiver.id)" class="ms-1 text-primary" title="Edit Customer">
+                                <i class="fa fa-pencil fa-sm"></i>
+                            </a>
+                        </p>
+                    </div>
+                    <div class="col-w-4 form-group" v-if="selectedReceiver && receiverAddresses.length && !receiverAddingNewAddress">
+                        <label class="form-label required">Receiver Address</label>
+                        <select class="form-control" v-model="form.receiverAddressId" v-on:change="onReceiverAddressChange">
+                            <option value="">-- Select Address --</option>
+                            <option v-for="a in receiverAddresses" :value="a.id">{{ a.addressLine1 }}, {{ a.city }} - {{ a.pinCode }}</option>
+                        </select>
+                        <div class="d-flex gap-2 mt-1">
+                            <a href="#" v-on:click.prevent="receiverAddingNewAddress = true; form.receiverAddressId = null" class="text-primary small d-inline-block">
+                                <i class="fa fa-plus"></i> Add New
+                            </a>
+                            <a href="#" v-if="form.receiverAddressId" v-on:click.prevent="editAddress('receiver', form.receiverAddressId)" class="text-primary small d-inline-block">
+                                <i class="fa fa-pencil fa-sm"></i> Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- New address for existing receiver -->
+                <div v-if="selectedReceiver && receiverAddingNewAddress">
+                    <p class="text-muted small mb-2">
+                        New address for {{ selectedReceiver.name }}:
+                        <a href="#" v-on:click.prevent="cancelReceiverNewAddress" class="text-danger ms-2">Cancel</a>
+                    </p>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Address Line 1</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.addressLine1"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">City</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.city"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">State</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.state"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Pin Code</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.pinCode" v-on:input="onReceiverPinCodeInput"/>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="!selectedReceiver">
+                    <p class="text-muted small mb-2">Or enter new receiver details:</p>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Name</label>
+                            <input type="text" class="form-control" v-model="form.receiverName"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Phone</label>
+                            <input type="text" class="form-control" v-model="form.receiverPhone"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Email</label>
+                            <input type="text" class="form-control" v-model="form.receiverEmail"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Customer Type</label>
+                            <select class="form-control" v-model="form.receiverCustomerType">
+                                <option value="1">Individual</option>
+                                <option value="2">Business</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Address Line 1</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.addressLine1"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">City</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.city"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">State</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.state"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Pin Code</label>
+                            <input type="text" class="form-control" v-model="form.newReceiverAddress.pinCode" v-on:input="onReceiverPinCodeInput"/>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="selectedReceiver" class="mb-2">
+                    <a href="#" v-on:click.prevent="clearReceiver" class="text-danger small">Clear Receiver</a>
+                </div>
+            </div>
+
+            <hr/>
+
+            <!-- Service Details -->
+            <h6 class="fw-bold mb-3">Service Details</h6>
+            <div class="d-flex flex-row gap-2 mb-3">
+                <div class="col-w-3 form-group">
+                    <label class="form-label required">Service Type</label>
+                    <select class="form-control" v-model="form.serviceType">
+                        <option value="1">Standard</option>
+                        <option value="2">Express</option>
+                        <option value="3">Same Day</option>
+                        <option value="4">Scheduled</option>
+                    </select>
+                </div>
+                <div class="col-w-3 form-group">
+                    <label class="form-label required">Payment Mode</label>
+                    <select class="form-control" v-model="form.paymentMode" v-on:change="onPaymentModeChange">
+                        <option value="1">Prepaid</option>
+                        <option value="2">COD</option>
+                        <option value="3">Credit</option>
+                        <option value="4">To Pay (Receiver)</option>
+                    </select>
+                </div>
+                <div class="col-w-3 form-group">
+                    <label class="form-label">Declared Value</label>
+                    <input type="number" step="0.01" class="form-control" v-model="form.declaredValue"/>
+                </div>
+                <div class="col-w-3 form-group" v-if="form.paymentMode == 2">
+                    <label class="form-label required">COD Amount</label>
+                    <input type="number" step="0.01" class="form-control" v-model="form.codAmount"/>
+                </div>
+            </div>
+            <div class="d-flex flex-row gap-2 mb-3">
+                <div class="col-w-6 form-group">
+                    <label class="form-label">Special Instructions</label>
+                    <textarea class="form-control" v-model="form.specialInstructions" rows="2"></textarea>
+                </div>
+            </div>
+
+            <!-- Destination Branch -->
+            <div class="d-flex flex-row gap-2 mb-3">
+                <div class="col-w-6 form-group">
+                    <label class="form-label required">Destination Branch</label>
+                    <div v-if="branchLoading" class="text-muted small"><i class="fa fa-spinner fa-spin"></i> Looking up branches...</div>
+                    <div v-else-if="!pinCodeMatched && branchLookupDone" class="alert alert-warning small py-1 px-2 mb-1">
+                        <i class="fa fa-info-circle"></i> No branches mapped to this pin code — showing all branches
+                    </div>
+                    <div v-if="!branchLoading && destinationBranches.length === 1 && pinCodeMatched">
+                        <input type="text" class="form-control" disabled :value="destinationBranches[0].name + ' (' + destinationBranches[0].code + ')'"/>
+                    </div>
+                    <div v-else-if="!branchLoading && destinationBranches.length > 0">
+                        <select class="form-control" v-model="form.destinationBranchId">
+                            <option :value="0" v-if="!pinCodeMatched">-- Select Branch --</option>
+                            <option v-for="b in sortedDestinationBranches" :value="b.id">
+                                {{ b.name }} ({{ b.code }}) - Load: {{ b.storageCapacity ? Math.round(b.currentLoad / b.storageCapacity * 100) : 0 }}%
+                            </option>
+                        </select>
+                    </div>
+                    <div v-else-if="!branchLoading && destinationBranches.length === 0">
+                        <select class="form-control" disabled>
+                            <option>Loading branches...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr/>
+
+            <!-- Packages Section -->
+            <h6 class="fw-bold mb-3">
+                Packages
+                <button type="button" class="btn btn-sm btn-outline-primary ms-2" v-on:click="addPackage">
+                    <i class="fa fa-plus"></i> Add Package
+                </button>
+            </h6>
+
+            <div v-for="(pkg, index) in form.packages" :key="index" class="card mb-3 border">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">Package #{{ index + 1 }}</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger" v-on:click="removePackage(index)" v-if="form.packages.length > 1">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Weight (kg)</label>
+                            <input type="number" step="0.01" class="form-control" v-model="pkg.weight"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Length (cm)</label>
+                            <input type="number" step="0.01" class="form-control" v-model="pkg.length"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Width (cm)</label>
+                            <input type="number" step="0.01" class="form-control" v-model="pkg.width"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Height (cm)</label>
+                            <input type="number" step="0.01" class="form-control" v-model="pkg.height"/>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-2 mb-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Package Type</label>
+                            <select class="form-control" v-model="pkg.packageType">
+                                <option value="1">Box</option>
+                                <option value="2">Envelope</option>
+                                <option value="3">Crate</option>
+                                <option value="4">Tube</option>
+                                <option value="5">Pallet</option>
+                            </select>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Content Description</label>
+                            <input type="text" class="form-control" v-model="pkg.contentDescription"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Volume (cm&sup3;)</label>
+                            <input type="text" class="form-control" disabled :value="calcVolume(pkg)"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Vol. Weight (kg)</label>
+                            <input type="text" class="form-control" disabled :value="calcVolWeight(pkg)"/>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-3 mb-2">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" v-model="pkg.isFragile" :id="'fragile'+index"/>
+                            <label class="form-check-label" :for="'fragile'+index">Fragile</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" v-model="pkg.isHazardous" :id="'hazardous'+index"/>
+                            <label class="form-check-label" :for="'hazardous'+index">Hazardous</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" v-model="pkg.canBeStacked" :id="'stackable'+index"/>
+                            <label class="form-check-label" :for="'stackable'+index">Stackable</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" v-model="pkg.requiresColdChain" :id="'coldchain'+index"/>
+                            <label class="form-check-label" :for="'coldchain'+index">Cold Chain</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight Summary -->
+            <div class="card mb-3 bg-light" v-if="form.packages.length">
+                <div class="card-body">
+                    <div class="d-flex gap-4">
+                        <div><strong>Total Weight:</strong> {{ totalWeight.toFixed(2) }} kg</div>
+                        <div><strong>Total Vol. Weight:</strong> {{ totalVolWeight.toFixed(2) }} kg</div>
+                        <div><strong>Chargeable Weight:</strong> {{ chargeableWeight.toFixed(2) }} kg</div>
+                        <div><strong>Total Volume:</strong> {{ totalVolume.toFixed(2) }} cm&sup3;</div>
+                        <div><strong>Package Count:</strong> {{ form.packages.length }}</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-primary me-1" v-on:click="submitForm" :disabled="submitting">
+                <span v-if="submitting"><i class="fa fa-spinner fa-spin"></i> Creating...</span>
+                <span v-else>Create Consignment</span>
+            </button>
+            <a asp-action="Index" class="btn btn-outline-dark">Discard</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/vue-prod-3.4.27.min.js"></script>
+    @await Html.PartialAsync("~/Areas/Consignment/Views/Shared/_CustomerEditOffcanvas.cshtml")
+    <script>
+        const { createApp, ref, computed, watch, onMounted } = Vue;
+        createApp({
+            setup() {
+                const senderSearch = ref('');
+                const receiverSearch = ref('');
+                const senderResults = ref([]);
+                const receiverResults = ref([]);
+                const selectedSender = ref(null);
+                const selectedReceiver = ref(null);
+                const senderAddresses = ref([]);
+                const receiverAddresses = ref([]);
+                const senderAddingNewAddress = ref(false);
+                const receiverAddingNewAddress = ref(false);
+                const submitting = ref(false);
+
+                // Destination branch state
+                const destinationBranches = ref([]);
+                const pinCodeMatched = ref(false);
+                const branchLoading = ref(false);
+                const branchLookupDone = ref(false);
+
+                const emptyAddress = () => ({ addressType: 1, addressLine1: '', addressLine2: '', city: '', state: '', pinCode: '', landmark: '', latitude: '', longitude: '', contactNo: '' });
+                const emptyPackage = () => ({ weight: 0, length: 0, width: 0, height: 0, packageType: 1, contentDescription: '', isFragile: false, isHazardous: false, canBeStacked: true, requiresColdChain: false });
+
+                const form = ref({
+                    senderId: null,
+                    senderAddressId: null,
+                    senderName: '',
+                    senderPhone: '',
+                    senderEmail: '',
+                    senderCustomerType: 1,
+                    newSenderAddress: emptyAddress(),
+                    receiverId: null,
+                    receiverAddressId: null,
+                    receiverName: '',
+                    receiverPhone: '',
+                    receiverEmail: '',
+                    receiverCustomerType: 1,
+                    newReceiverAddress: emptyAddress(),
+                    destinationBranchId: 0,
+                    serviceType: 1,
+                    paymentMode: 1,
+                    declaredValue: null,
+                    codAmount: null,
+                    specialInstructions: '',
+                    packages: [emptyPackage()],
+                });
+
+                let searchTimer = null;
+                const searchCustomer = async (term) => {
+                    if (term.length < 2) return [];
+                    const res = await fetch(`/Consignment/Consignment/SearchCustomer?term=${encodeURIComponent(term)}`);
+                    return await res.json();
+                };
+
+                const searchSender = () => {
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(async () => {
+                        senderResults.value = await searchCustomer(senderSearch.value);
+                    }, 300);
+                };
+
+                const searchReceiver = () => {
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(async () => {
+                        receiverResults.value = await searchCustomer(receiverSearch.value);
+                    }, 300);
+                };
+
+                const loadAddresses = async (customerId) => {
+                    const res = await fetch(`/Consignment/Consignment/GetCustomerAddresses?customerId=${customerId}`);
+                    return await res.json();
+                };
+
+                const selectSender = async (customer) => {
+                    selectedSender.value = customer;
+                    form.value.senderId = customer.id;
+                    senderResults.value = [];
+                    senderSearch.value = '';
+                    senderAddingNewAddress.value = false;
+                    senderAddresses.value = await loadAddresses(customer.id);
+                    if (senderAddresses.value.length === 1) {
+                        form.value.senderAddressId = senderAddresses.value[0].id;
+                    }
+                };
+
+                const selectReceiver = async (customer) => {
+                    selectedReceiver.value = customer;
+                    form.value.receiverId = customer.id;
+                    receiverResults.value = [];
+                    receiverSearch.value = '';
+                    receiverAddingNewAddress.value = false;
+                    receiverAddresses.value = await loadAddresses(customer.id);
+                    if (receiverAddresses.value.length === 1) {
+                        form.value.receiverAddressId = receiverAddresses.value[0].id;
+                        onReceiverAddressChange();
+                    }
+                };
+
+                const clearSender = () => {
+                    selectedSender.value = null;
+                    form.value.senderId = null;
+                    form.value.senderAddressId = '';
+                    senderAddresses.value = [];
+                    senderAddingNewAddress.value = false;
+                    form.value.newSenderAddress = emptyAddress();
+                };
+
+                const clearReceiver = () => {
+                    selectedReceiver.value = null;
+                    form.value.receiverId = null;
+                    form.value.receiverAddressId = '';
+                    receiverAddresses.value = [];
+                    receiverAddingNewAddress.value = false;
+                    form.value.newReceiverAddress = emptyAddress();
+                    clearDestinationBranch();
+                };
+
+                const cancelSenderNewAddress = () => {
+                    senderAddingNewAddress.value = false;
+                    form.value.newSenderAddress = emptyAddress();
+                    if (senderAddresses.value.length === 1) {
+                        form.value.senderAddressId = senderAddresses.value[0].id;
+                    }
+                };
+
+                const cancelReceiverNewAddress = () => {
+                    receiverAddingNewAddress.value = false;
+                    form.value.newReceiverAddress = emptyAddress();
+                    clearDestinationBranch();
+                    if (receiverAddresses.value.length === 1) {
+                        form.value.receiverAddressId = receiverAddresses.value[0].id;
+                        onReceiverAddressChange();
+                    }
+                };
+
+                // Load all branches (used as fallback and initial state)
+                const loadAllBranches = async () => {
+                    try {
+                        const res = await fetch('/Consignment/Consignment/GetAllBranches');
+                        return await res.json();
+                    } catch {
+                        return [];
+                    }
+                };
+
+                // Destination branch lookup
+                let branchTimer = null;
+                const lookupDestinationBranch = (pinCode) => {
+                    clearTimeout(branchTimer);
+                    if (!pinCode || pinCode.length < 4) {
+                        clearDestinationBranch();
+                        return;
+                    }
+                    branchLoading.value = true;
+                    branchLookupDone.value = false;
+                    branchTimer = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/Consignment/Consignment/CheckServiceability?pinCode=${encodeURIComponent(pinCode)}`);
+                            const data = await res.json();
+                            pinCodeMatched.value = data.serviceable;
+                            destinationBranches.value = data.branches || [];
+                            branchLookupDone.value = true;
+                            if (data.serviceable && destinationBranches.value.length > 0) {
+                                // Auto-select the least loaded branch
+                                const best = [...destinationBranches.value].sort((a, b) => {
+                                    const ratioA = a.storageCapacity ? a.currentLoad / a.storageCapacity : 0;
+                                    const ratioB = b.storageCapacity ? b.currentLoad / b.storageCapacity : 0;
+                                    return ratioA - ratioB;
+                                })[0];
+                                form.value.destinationBranchId = best.id;
+                            } else {
+                                // Fallback: all branches returned, user picks manually
+                                form.value.destinationBranchId = 0;
+                            }
+                        } catch {
+                            destinationBranches.value = [];
+                            pinCodeMatched.value = false;
+                            branchLookupDone.value = true;
+                            form.value.destinationBranchId = 0;
+                        } finally {
+                            branchLoading.value = false;
+                        }
+                    }, 300);
+                };
+
+                const clearDestinationBranch = async () => {
+                    pinCodeMatched.value = false;
+                    branchLookupDone.value = false;
+                    form.value.destinationBranchId = 0;
+                    destinationBranches.value = await loadAllBranches();
+                };
+
+                const sortedDestinationBranches = computed(() => {
+                    return [...destinationBranches.value].sort((a, b) => {
+                        const ratioA = a.storageCapacity ? a.currentLoad / a.storageCapacity : 0;
+                        const ratioB = b.storageCapacity ? b.currentLoad / b.storageCapacity : 0;
+                        return ratioA - ratioB;
+                    });
+                });
+
+                // When an existing receiver address is selected, look up its pin code
+                const onReceiverAddressChange = () => {
+                    const addrId = form.value.receiverAddressId;
+                    if (!addrId) {
+                        clearDestinationBranch();
+                        return;
+                    }
+                    const addr = receiverAddresses.value.find(a => a.id == addrId);
+                    if (addr && addr.pinCode) {
+                        lookupDestinationBranch(addr.pinCode);
+                    }
+                };
+
+                // When receiver pin code is typed (new customer or new address)
+                const onReceiverPinCodeInput = () => {
+                    lookupDestinationBranch(form.value.newReceiverAddress.pinCode);
+                };
+
+                // COD payment mode change
+                const onPaymentModeChange = () => {
+                    if (form.value.paymentMode != 2) {
+                        form.value.codAmount = null;
+                    }
+                };
+
+                const addPackage = () => form.value.packages.push(emptyPackage());
+                const removePackage = (index) => form.value.packages.splice(index, 1);
+
+                const calcVolume = (pkg) => ((pkg.length || 0) * (pkg.width || 0) * (pkg.height || 0)).toFixed(2);
+                const calcVolWeight = (pkg) => (((pkg.length || 0) * (pkg.width || 0) * (pkg.height || 0)) / 5000).toFixed(2);
+
+                const totalWeight = computed(() => form.value.packages.reduce((s, p) => s + (parseFloat(p.weight) || 0), 0));
+                const totalVolWeight = computed(() => form.value.packages.reduce((s, p) => s + (((p.length || 0) * (p.width || 0) * (p.height || 0)) / 5000), 0));
+                const chargeableWeight = computed(() => Math.max(totalWeight.value, totalVolWeight.value));
+                const totalVolume = computed(() => form.value.packages.reduce((s, p) => s + ((p.length || 0) * (p.width || 0) * (p.height || 0)), 0));
+
+                const validateForm = () => {
+                    const errors = [];
+                    // Sender validation
+                    if (selectedSender.value) {
+                        if (!senderAddingNewAddress.value && !form.value.senderAddressId) {
+                            errors.push('Please select a sender address or add a new one.');
+                        }
+                        if (senderAddingNewAddress.value) {
+                            if (!form.value.newSenderAddress.addressLine1) errors.push('Sender new address: Address Line 1 is required.');
+                            if (!form.value.newSenderAddress.city) errors.push('Sender new address: City is required.');
+                            if (!form.value.newSenderAddress.state) errors.push('Sender new address: State is required.');
+                            if (!form.value.newSenderAddress.pinCode) errors.push('Sender new address: Pin Code is required.');
+                        }
+                    } else {
+                        if (!form.value.senderName) errors.push('Sender name is required.');
+                        if (!form.value.senderPhone) errors.push('Sender phone is required.');
+                        if (!form.value.newSenderAddress.addressLine1) errors.push('Sender address line 1 is required.');
+                        if (!form.value.newSenderAddress.city) errors.push('Sender city is required.');
+                        if (!form.value.newSenderAddress.state) errors.push('Sender state is required.');
+                        if (!form.value.newSenderAddress.pinCode) errors.push('Sender pin code is required.');
+                    }
+
+                    // Receiver validation
+                    if (selectedReceiver.value) {
+                        if (!receiverAddingNewAddress.value && !form.value.receiverAddressId) {
+                            errors.push('Please select a receiver address or add a new one.');
+                        }
+                        if (receiverAddingNewAddress.value) {
+                            if (!form.value.newReceiverAddress.addressLine1) errors.push('Receiver new address: Address Line 1 is required.');
+                            if (!form.value.newReceiverAddress.city) errors.push('Receiver new address: City is required.');
+                            if (!form.value.newReceiverAddress.state) errors.push('Receiver new address: State is required.');
+                            if (!form.value.newReceiverAddress.pinCode) errors.push('Receiver new address: Pin Code is required.');
+                        }
+                    } else {
+                        if (!form.value.receiverName) errors.push('Receiver name is required.');
+                        if (!form.value.receiverPhone) errors.push('Receiver phone is required.');
+                        if (!form.value.newReceiverAddress.addressLine1) errors.push('Receiver address line 1 is required.');
+                        if (!form.value.newReceiverAddress.city) errors.push('Receiver city is required.');
+                        if (!form.value.newReceiverAddress.state) errors.push('Receiver state is required.');
+                        if (!form.value.newReceiverAddress.pinCode) errors.push('Receiver pin code is required.');
+                    }
+
+                    // Destination branch
+                    if (!form.value.destinationBranchId || form.value.destinationBranchId <= 0) {
+                        errors.push('Destination branch is required. Please select a branch.');
+                    }
+
+                    // COD validation
+                    if (form.value.paymentMode == 2 && (!form.value.codAmount || form.value.codAmount <= 0)) {
+                        errors.push('COD amount is required and must be greater than 0.');
+                    }
+
+                    // Package validation
+                    if (!form.value.packages.length) {
+                        errors.push('At least one package is required.');
+                    }
+                    for (let i = 0; i < form.value.packages.length; i++) {
+                        const p = form.value.packages[i];
+                        if (!p.weight || parseFloat(p.weight) <= 0) errors.push(`Package #${i+1}: Weight must be greater than 0.`);
+                        if (!p.length || parseFloat(p.length) <= 0) errors.push(`Package #${i+1}: Length must be greater than 0.`);
+                        if (!p.width || parseFloat(p.width) <= 0) errors.push(`Package #${i+1}: Width must be greater than 0.`);
+                        if (!p.height || parseFloat(p.height) <= 0) errors.push(`Package #${i+1}: Height must be greater than 0.`);
+                    }
+
+                    return errors;
+                };
+
+                const editCustomer = (role, customerId) => {
+                    window.customerEditOffcanvas.openCustomerEdit(customerId, (updatedData) => {
+                        if (role === 'sender' && selectedSender.value) {
+                            selectedSender.value.name = updatedData.name;
+                            selectedSender.value.phoneNo = updatedData.phoneNo;
+                            selectedSender.value.email = updatedData.email;
+                        } else if (role === 'receiver' && selectedReceiver.value) {
+                            selectedReceiver.value.name = updatedData.name;
+                            selectedReceiver.value.phoneNo = updatedData.phoneNo;
+                            selectedReceiver.value.email = updatedData.email;
+                        }
+                    });
+                };
+
+                const editAddress = (role, addressId) => {
+                    window.customerEditOffcanvas.openAddressEdit(addressId, (updatedData) => {
+                        // Reload addresses to reflect the update
+                        const customerId = role === 'sender' ? selectedSender.value?.id : selectedReceiver.value?.id;
+                        if (customerId) {
+                            loadAddresses(customerId).then(addresses => {
+                                if (role === 'sender') {
+                                    senderAddresses.value = addresses;
+                                } else {
+                                    receiverAddresses.value = addresses;
+                                    // Re-trigger branch lookup if receiver address pin changed
+                                    if (form.value.receiverAddressId) {
+                                        onReceiverAddressChange();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                };
+
+                const submitForm = async () => {
+                    const errors = validateForm();
+                    if (errors.length > 0) {
+                        notify.validationError(errors.map(e => `<div>${e}</div>`).join(''));
+                        return;
+                    }
+
+                    // Clear new address fields if using existing address (to avoid confusion on server)
+                    if (selectedSender.value && !senderAddingNewAddress.value) {
+                        form.value.newSenderAddress = emptyAddress();
+                    }
+                    if (selectedReceiver.value && !receiverAddingNewAddress.value) {
+                        form.value.newReceiverAddress = emptyAddress();
+                    }
+                    // If adding new address for existing customer, clear addressId
+                    if (senderAddingNewAddress.value) {
+                        form.value.senderAddressId = null;
+                    }
+                    if (receiverAddingNewAddress.value) {
+                        form.value.receiverAddressId = null;
+                    }
+
+                    submitting.value = true;
+                    try {
+                        const res = await fetch('/Consignment/Consignment/Create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(form.value),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            notify.error(data.message || 'An error occurred');
+                        }
+                    } catch (e) {
+                        notify.error('An error occurred: ' + e.message);
+                    } finally {
+                        submitting.value = false;
+                    }
+                };
+
+                // Load all branches on mount so dropdown is populated initially
+                onMounted(async () => {
+                    destinationBranches.value = await loadAllBranches();
+                });
+
+                return {
+                    form, senderSearch, receiverSearch, senderResults, receiverResults,
+                    selectedSender, selectedReceiver, senderAddresses, receiverAddresses,
+                    senderAddingNewAddress, receiverAddingNewAddress, submitting,
+                    destinationBranches, pinCodeMatched, branchLoading, branchLookupDone,
+                    sortedDestinationBranches,
+                    searchSender, searchReceiver, selectSender, selectReceiver, clearSender, clearReceiver,
+                    cancelSenderNewAddress, cancelReceiverNewAddress,
+                    onReceiverAddressChange, onReceiverPinCodeInput, onPaymentModeChange,
+                    addPackage, removePackage, calcVolume, calcVolWeight,
+                    totalWeight, totalVolWeight, chargeableWeight, totalVolume, submitForm,
+                    editCustomer, editAddress,
+                };
+            }
+        }).mount('#consignment-app');
+    </script>
+}

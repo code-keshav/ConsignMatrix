@@ -1,0 +1,47 @@
+﻿<link rel="stylesheet" href="~/dist/sweet-alert-2/sweetalert2.min.css">
+<script src="~/dist/sweet-alert-2/sweetalert2.all.min.js"></script>
+<script>
+    window.notify = {
+        success(text, title) {
+            return Swal.fire({ icon: 'success', title: title || 'Success', text: text, timer: 1500, showConfirmButton: false });
+        },
+        error(text, title) {
+            return Swal.fire({ icon: 'error', title: title || 'Error', text: text });
+        },
+        validationError(html, title) {
+            return Swal.fire({ icon: 'error', title: title || 'Validation Error', html: html });
+        },
+        warning(text, title) {
+            return Swal.fire({ icon: 'warning', title: title || 'Warning', text: text });
+        },
+        info(text, title) {
+            return Swal.fire({ icon: 'info', title: title || 'Info', text: text });
+        },
+        confirm(message, onConfirm, options) {
+            const defaults = {
+                title: 'Are you sure?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirm',
+                timer: 9000,
+            };
+            return Swal.fire({ ...defaults, ...options, text: message }).then((result) => {
+                if (result.isConfirmed && onConfirm) onConfirm(result);
+            });
+        },
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let reqConfirms = document.querySelectorAll(".req-confirm");
+        Array.from(reqConfirms).forEach(item => {
+            item.addEventListener("click", function(event) {
+                event.preventDefault();
+                let message = item.dataset.message;
+                let url = item.getAttribute("href");
+                notify.confirm(message, () => { window.location.href = url; });
+            });
+        });
+    });
+</script>

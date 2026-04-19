@@ -1,0 +1,63 @@
+@model Web.Areas.Admin.ViewModels.UserImportVm
+
+@{
+    ViewBag.Title = "Import Users";
+}
+
+<div class="container-xl">
+    <div class="card col-10">
+        <h3 class="card-header">Import Users from Excel</h3>
+
+        <form method="post" asp-action="Import" enctype="multipart/form-data">
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h4>Instructions:</h4>
+                    <ul class="mb-3">
+                        <li>Download the sample Excel template below</li>
+                        <li>Fill in user details (Name, Email, ContactNo, Address, BranchCode, UserLevel, Password, Role)</li>
+                        <li><strong>Required fields:</strong> Name, Email, ContactNo, BranchCode, UserLevel, Role</li>
+                        <li><strong>Optional fields:</strong> Address, Password (uses default if empty)</li>
+                        <li><strong>BranchCode:</strong> Must match an existing branch code in the database</li>
+                        <li><strong>UserLevel values:</strong> 1=SuperAdmin, 2=Admin, 3=BranchAdmin, 4=User</li>
+                        <li><strong>Password:</strong> Must be 5+ characters with at least one digit</li>
+                        <li>Email must be unique across all users</li>
+                        <li>Enter a default password below for users without individual passwords</li>
+                    </ul>
+                    <a asp-action="DownloadUserSample" class="btn btn-sm btn-primary">
+                        <i class="fa fa-download me-1"></i> Download Sample Template
+                    </a>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label required">Excel File (.xlsx)</label>
+                            <input type="file" asp-for="File" class="form-control" accept=".xlsx" required />
+                            <span asp-validation-for="File" class="text-danger"></span>
+                            <small class="form-hint">Maximum file size: 10MB</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label required">Default Password</label>
+                            <input type="password" asp-for="DefaultPassword" class="form-control" />
+                            <span asp-validation-for="DefaultPassword" class="text-danger"></span>
+                            <small class="form-hint">Used for users without individual passwords (5+ chars, 1 digit)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-upload me-1"></i> Upload and Import
+                </button>
+                <a asp-action="Index" class="btn btn-ghost-muted">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

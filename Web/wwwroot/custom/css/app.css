@@ -1,0 +1,29 @@
+﻿.form-label{
+    margin-bottom: 0 !important;
+}
+.h-11{
+    height: 11rem;
+}
+.w-14{
+    width: 14rem;
+}
+
+.image-label{
+    background-color: rgba(215,232,255,0.78);
+}
+
+.form-mw-div > *{
+    min-width: 30rem;
+}
+.header_text{
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.select2-selection{
+    height: 35px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 33px !important;
+}

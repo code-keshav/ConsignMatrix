@@ -1,0 +1,46 @@
+.table_bold th {
+    font-weight: bold;
+!important;
+    text-transform: none !important;
+    color: black !important;
+    font-size: 12px !important;
+    padding: 12px;
+!important;
+    text-align: center !important;
+
+}
+
+.table_bold td {
+    padding: 5px;
+!important;
+    font-size: 13px !important;
+}
+
+.col-mx-w-20 {
+    min-width: 15rem;
+}
+
+.required:after {
+    content: "*";
+    color: red;
+}
+
+.col-w-3 {
+    width: 25%
+}
+
+.col-w-4 {
+    width: 33%
+}
+
+.form-group{
+    margin-top: 6px;
+}
+
+/* Sidebar nesting indentation */
+.sidebar-menu > .nav-item > .nav-treeview > .nav-item > .nav-link {
+    padding-left: 1.5rem;
+}
+.sidebar-menu > .nav-item > .nav-treeview > .nav-item > .nav-treeview > .nav-item > .nav-link {
+    padding-left: 2.5rem;
+}

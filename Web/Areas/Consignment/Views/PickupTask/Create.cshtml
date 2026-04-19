@@ -1,0 +1,214 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Pickup.PickupTaskCreateVm
+
+@{
+    ViewData["Title"] = "Schedule Pickup";
+}
+
+<div id="pickup-create-app">
+    <div class="card col-12 shadow-sm">
+        <h5 class="card-header">Schedule Pickup</h5>
+        <div class="card-body">
+
+            <!-- Consignment Search -->
+            <h6 class="fw-bold mb-3">Consignment</h6>
+            <div class="row mb-3" v-if="!consignment.id">
+                <div class="col-w-4 form-group">
+                    <label class="form-label">Search by Tracking Number</label>
+                    <input type="text" class="form-control" v-model="searchTerm" v-on:input="searchConsignment"
+                           placeholder="Enter tracking number"/>
+                    <div v-if="searchResults.length" class="list-group position-absolute" style="z-index:100; max-height:200px; overflow-y:auto;">
+                        <a href="#" class="list-group-item list-group-item-action" v-for="c in searchResults"
+                           v-on:click.prevent="selectConsignment(c)">
+                            {{ c.trackingNumber }} - {{ c.senderName }} ({{ c.senderPhone }})
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Consignment Info -->
+            <div v-if="consignment.id" class="card bg-light mb-3">
+                <div class="card-body py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ consignment.trackingNumber }}</strong>
+                            <span class="ms-3 text-muted">Sender: {{ consignment.senderName }} ({{ consignment.senderPhone }})</span>
+                            <span class="ms-3 text-muted">Weight: {{ consignment.chargeableWeight }}kg</span>
+                            <span class="ms-3 text-muted">Packages: {{ consignment.packageCount }}</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" v-on:click="clearConsignment" v-if="!prefilled">
+                            <i class="fa fa-times"></i> Change
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pickup Details -->
+            <div v-if="consignment.id">
+                <h6 class="fw-bold mb-3">Pickup Details</h6>
+                <div class="d-flex flex-row gap-2 mb-3">
+                    <div class="col-w-3 form-group">
+                        <label class="form-label required">Pickup Date</label>
+                        <input type="date" class="form-control" v-model="form.pickupDate"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label class="form-label required">Pickup Slot</label>
+                        <select class="form-control" v-model.number="form.pickupSlot">
+                            <option value="1">Morning (9 AM - 12 PM)</option>
+                            <option value="2">Afternoon (12 PM - 4 PM)</option>
+                            <option value="3">Evening (4 PM - 8 PM)</option>
+                        </select>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label class="form-label required">Contact Phone</label>
+                        <input type="text" class="form-control" v-model="form.contactPhone"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label class="form-label">Contact Name</label>
+                        <input type="text" class="form-control" v-model="form.contactName"/>
+                    </div>
+                </div>
+                <div class="d-flex flex-row gap-2 mb-3">
+                    <div class="col-12 form-group">
+                        <label class="form-label required">Pickup Address</label>
+                        <textarea class="form-control" rows="2" v-model="form.pickupAddress"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer text-end" v-if="consignment.id">
+            <a href="/Consignment/PickupTask/Index" class="btn btn-secondary me-2">Cancel</a>
+            <button class="btn btn-primary" v-on:click="submit" :disabled="submitting">
+                <span v-if="submitting"><i class="fa fa-spinner fa-spin"></i> Scheduling...</span>
+                <span v-else><i class="fa fa-calendar-check"></i> Schedule Pickup</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/vue-prod-3.4.27.min.js"></script>
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        createApp({
+            setup() {
+                const prefilled = ref(false);
+                const searchTerm = ref('');
+                const searchResults = ref([]);
+                const submitting = ref(false);
+                let searchTimeout = null;
+
+                const consignment = ref({
+                    id: @(Model.ConsignmentId > 0 ? Model.ConsignmentId.ToString() : "0"),
+                    trackingNumber: '@(Model.TrackingNumber ?? "")',
+                    senderName: '@(Model.SenderName ?? "")',
+                    senderPhone: '@(Model.SenderPhone ?? "")',
+                    chargeableWeight: @(Model.TotalWeight?.ToString() ?? "0"),
+                    packageCount: @(Model.PackageCount?.ToString() ?? "0"),
+                });
+
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                const form = ref({
+                    consignmentId: @(Model.ConsignmentId > 0 ? Model.ConsignmentId.ToString() : "0"),
+                    pickupDate: '@(Model.PickupDate != default ? Model.PickupDate.ToString("yyyy-MM-dd") : "")'
+                                || tomorrow.toISOString().split('T')[0],
+                    pickupSlot: @((int)Model.PickupSlot),
+                    pickupAddress: '@Html.Raw((Model.PickupAddress ?? "").Replace("'", "\\'"))',
+                    contactPhone: '@(Model.ContactPhone ?? "")',
+                    contactName: '@(Model.ContactName ?? "")',
+                });
+
+                if (consignment.value.id > 0) {
+                    prefilled.value = true;
+                }
+
+                function searchConsignment() {
+                    clearTimeout(searchTimeout);
+                    if (searchTerm.value.length < 2) {
+                        searchResults.value = [];
+                        return;
+                    }
+                    searchTimeout = setTimeout(async () => {
+                        try {
+                            const res = await fetch(`/Consignment/PickupTask/SearchConsignment?term=${encodeURIComponent(searchTerm.value)}`);
+                            searchResults.value = await res.json();
+                        } catch (e) {
+                            searchResults.value = [];
+                        }
+                    }, 300);
+                }
+
+                function selectConsignment(c) {
+                    consignment.value = {
+                        id: c.id,
+                        trackingNumber: c.trackingNumber,
+                        senderName: c.senderName,
+                        senderPhone: c.senderPhone,
+                        chargeableWeight: c.chargeableWeight,
+                        packageCount: c.packageCount,
+                    };
+                    form.value.consignmentId = c.id;
+                    form.value.pickupAddress = c.senderAddress || '';
+                    form.value.contactPhone = c.contactPhone || '';
+                    form.value.contactName = c.senderName || '';
+                    searchResults.value = [];
+                    searchTerm.value = '';
+                }
+
+                function clearConsignment() {
+                    consignment.value = { id: 0 };
+                    form.value.consignmentId = 0;
+                    form.value.pickupAddress = '';
+                    form.value.contactPhone = '';
+                    form.value.contactName = '';
+                }
+
+                async function submit() {
+                    if (!form.value.consignmentId) {
+                        notify.error('Please select a consignment');
+                        return;
+                    }
+                    if (!form.value.pickupDate) {
+                        notify.error('Pickup date is required');
+                        return;
+                    }
+                    if (!form.value.pickupAddress) {
+                        notify.error('Pickup address is required');
+                        return;
+                    }
+                    if (!form.value.contactPhone) {
+                        notify.error('Contact phone is required');
+                        return;
+                    }
+
+                    submitting.value = true;
+                    try {
+                        const res = await fetch('/Consignment/PickupTask/Create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(form.value),
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            notify.success('Pickup scheduled successfully');
+                            window.location.href = data.redirectUrl;
+                        } else {
+                            notify.error(data.message);
+                        }
+                    } catch (e) {
+                        notify.error(e.message);
+                    }
+                    submitting.value = false;
+                }
+
+                return {
+                    prefilled, searchTerm, searchResults, submitting,
+                    consignment, form,
+                    searchConsignment, selectConsignment, clearConsignment, submit,
+                };
+            }
+        }).mount('#pickup-create-app');
+    </script>
+}

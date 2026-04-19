@@ -1,0 +1,222 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Pickup.PickupDetailVm
+
+@{
+    ViewData["Title"] = "Pickup Detail";
+}
+
+<div class="container">
+
+    <!-- Pickup Task Info -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Pickup Task #@Model.Id</h4>
+            <div>
+                @{
+                    var badgeClass = Model.TaskStatus switch
+                    {
+                        PickupTaskStatus.Pending => "bg-warning",
+                        PickupTaskStatus.Assigned => "bg-info",
+                        PickupTaskStatus.InProgress => "bg-primary",
+                        PickupTaskStatus.Completed => "bg-success",
+                        PickupTaskStatus.Failed => "bg-danger",
+                        PickupTaskStatus.Cancelled => "bg-secondary",
+                        _ => "bg-secondary"
+                    };
+                }
+                <span class="badge @badgeClass fs-6">@Model.TaskStatus</span>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Pickup Date</label>
+                    <p>@Model.PickupDate.ToString("yyyy-MM-dd")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Pickup Slot</label>
+                    <p>
+                        @(Model.PickupSlot switch
+                        {
+                            PickupSlot.Morning => "Morning (9 AM - 12 PM)",
+                            PickupSlot.Afternoon => "Afternoon (12 PM - 4 PM)",
+                            PickupSlot.Evening => "Evening (4 PM - 8 PM)",
+                            _ => Model.PickupSlot.ToString()
+                        })
+                    </p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Assigned Driver</label>
+                    <p>@(Model.AssignedDriverName ?? "Not assigned")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Assigned Vehicle</label>
+                    <p>@(Model.AssignedVehicleNumber ?? "Not assigned")</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Contact Name</label>
+                    <p>@(Model.ContactName ?? "-")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Contact Phone</label>
+                    <p>@Model.ContactPhone</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Attempt Count</label>
+                    <p>@Model.AttemptCount</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Created</label>
+                    <p>@Model.RecDate.ToString("yyyy-MM-dd HH:mm")</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label class="fw-bold">Pickup Address</label>
+                    <p>@Model.PickupAddress</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consignment Summary -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Consignment Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-w-3">
+                    <label class="fw-bold">Tracking Number</label>
+                    <p><a href="/Consignment/Consignment/Detail/@Model.ConsignmentId">@Model.TrackingNumber</a></p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Sender</label>
+                    <p>@Model.SenderName</p>
+                    <p class="text-muted small">@Model.SenderPhone</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Weight / Packages</label>
+                    <p>@Model.ConsignmentWeight kg / @Model.PackageCount pkg(s)</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Service / Payment</label>
+                    <p>@Model.ServiceType / @Model.PaymentMode</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execution Details (shown for completed/failed) -->
+    @if (Model.TaskStatus == PickupTaskStatus.Completed || Model.TaskStatus == PickupTaskStatus.Failed)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Execution Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @if (Model.TaskStatus == PickupTaskStatus.Completed)
+                    {
+                        <div class="col-w-3">
+                            <label class="fw-bold">Pickup Time</label>
+                            <p>@(Model.PickupTime?.ToString("yyyy-MM-dd HH:mm") ?? "-")</p>
+                        </div>
+                        <div class="col-w-3">
+                            <label class="fw-bold">Verified Weight</label>
+                            <p>@(Model.VerifiedWeight?.ToString("F3") ?? "-") kg</p>
+                        </div>
+                    }
+                    @if (Model.TaskStatus == PickupTaskStatus.Failed)
+                    {
+                        <div class="col-w-3">
+                            <label class="fw-bold">Failure Reason</label>
+                            <p class="text-danger">@(Model.FailReason?.ToString() ?? "-")</p>
+                        </div>
+                    }
+                    <div class="col-w-3">
+                        <label class="fw-bold">Remarks</label>
+                        <p>@(Model.Remarks ?? "-")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Attempt History -->
+    @if (Model.AttemptHistory.Count > 1)
+    {
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">Pickup Attempt History</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Slot</th>
+                            <th>Status</th>
+                            <th>Driver</th>
+                            <th>Fail Reason</th>
+                            <th>Remarks</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ var sn = 0; }
+                        @foreach (var attempt in Model.AttemptHistory)
+                        {
+                            sn++;
+                            var rowBadge = attempt.TaskStatus switch
+                            {
+                                PickupTaskStatus.Pending => "bg-warning",
+                                PickupTaskStatus.Assigned => "bg-info",
+                                PickupTaskStatus.InProgress => "bg-primary",
+                                PickupTaskStatus.Completed => "bg-success",
+                                PickupTaskStatus.Failed => "bg-danger",
+                                PickupTaskStatus.Cancelled => "bg-secondary",
+                                _ => "bg-secondary"
+                            };
+                            <tr class="@(attempt.Id == Model.Id ? "table-active" : "")">
+                                <td>@sn</td>
+                                <td>@attempt.PickupDate.ToString("yyyy-MM-dd")</td>
+                                <td>@attempt.PickupSlot</td>
+                                <td><span class="badge @rowBadge">@attempt.TaskStatus</span></td>
+                                <td>@(attempt.DriverName ?? "-")</td>
+                                <td>@(attempt.FailReason?.ToString() ?? "-")</td>
+                                <td>@(attempt.Remarks ?? "-")</td>
+                                <td>@attempt.RecDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2 mb-3">
+        @if (Model.TaskStatus != PickupTaskStatus.Completed && Model.TaskStatus != PickupTaskStatus.Cancelled)
+        {
+            @if (!Model.HasActivePickup && (Model.TaskStatus == PickupTaskStatus.Failed || Model.TaskStatus == PickupTaskStatus.Cancelled))
+            {
+                <a href="/Consignment/PickupTask/Create?consignmentId=@Model.ConsignmentId" class="btn btn-primary">
+                    <i class="fa fa-calendar-check"></i> Reschedule Pickup
+                </a>
+            }
+        }
+        <a href="/Consignment/Consignment/Detail/@Model.ConsignmentId" class="btn btn-outline-info">
+            <i class="fa fa-eye"></i> View Consignment
+        </a>
+        <a href="/Consignment/PickupTask/Index" class="btn btn-sm btn-secondary ms-2">
+            <i class="fa fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>

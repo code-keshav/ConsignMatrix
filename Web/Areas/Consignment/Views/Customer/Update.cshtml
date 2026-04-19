@@ -1,0 +1,51 @@
+﻿@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.CustomerVm
+
+@{
+    ViewBag.Title = "Update Customer";
+}
+
+<form asp-action="Update" method="post">
+    <div class="card col-12">
+        <h5 class="card-header">Update Customer</h5>
+        <div class="card-body">
+            <div class="row w-full">
+                <div class=" d-flex flex-row gap-2">
+                    <input asp-for="Id" hidden/>
+                    <div class="col-w-4 form-group">
+                        <label class="form-label required">Customer Type</label>
+                        <select asp-for="CustomerType" class="form-control"
+                                asp-items="Html.GetEnumSelectList<CustomerType>()">
+                            <option value="">-- Select Customer Type --</option>
+                        </select>
+                    </div>
+                    <div class="col-w-4 form-group">
+                        <label class="form-label required" asp-for="Name">Name </label>
+                        <input asp-for="Name" class="form-control"/>
+                    </div>
+
+                    <div class="col-w-4 form-group">
+                        <label asp-for="PhoneNo" class="form-label required">Phone No </label>
+                        <input asp-for="PhoneNo" class="form-control"/>
+                    </div>
+
+                </div>
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Secondary Phone No</label>
+                        <input asp-for="SecondaryPhoneNo" class="form-control"/>
+                    </div>
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control"/>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Update</button>
+            <a asp-action="Index" class="btn btn-outline-dark">Discard</a>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,241 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Consignment.ConsignmentVm
+
+@{
+    ViewBag.Title = "Update Consignment";
+}
+
+<div id="consignment-update-app">
+    <form asp-action="Update" method="post" id="update-form">
+        <div class="card col-12">
+            <h5 class="card-header">Update Consignment - @Model.TrackingNumber</h5>
+            <div class="card-body">
+                <div class="row w-full">
+                    <input asp-for="Id" hidden/>
+                    <input asp-for="TrackingNumber" hidden/>
+
+                    <!-- Sender Info -->
+                    <h6 class="fw-bold mb-3">Sender</h6>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="fw-bold">{{ sender.name }} ({{ sender.phone }})</span>
+                        <a href="#" v-on:click.prevent="editCustomer('sender')" class="text-primary" title="Edit Sender">
+                            <i class="fa fa-pencil fa-sm"></i>
+                        </a>
+                        <span class="ms-3 text-muted">{{ sender.addressDisplay }}</span>
+                        <a href="#" v-on:click.prevent="editAddress('sender')" class="text-primary" title="Edit Address">
+                            <i class="fa fa-pencil fa-sm"></i>
+                        </a>
+                    </div>
+
+                    <!-- Receiver Info -->
+                    <h6 class="fw-bold mb-3">Receiver</h6>
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="fw-bold">{{ receiver.name }} ({{ receiver.phone }})</span>
+                        <a href="#" v-on:click.prevent="editCustomer('receiver')" class="text-primary" title="Edit Receiver">
+                            <i class="fa fa-pencil fa-sm"></i>
+                        </a>
+                        <span class="ms-3 text-muted">{{ receiver.addressDisplay }}</span>
+                        <a href="#" v-on:click.prevent="editAddress('receiver')" class="text-primary" title="Edit Address">
+                            <i class="fa fa-pencil fa-sm"></i>
+                        </a>
+                    </div>
+
+                    <hr/>
+
+                    <!-- Service Details -->
+                    <h6 class="fw-bold mb-3">Service Details</h6>
+                    <div class="d-flex flex-row gap-2">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Service Type</label>
+                            <select asp-for="ServiceType" class="form-control"
+                                    asp-items="Html.GetEnumSelectList<ServiceType>()">
+                            </select>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label required">Payment Mode</label>
+                            <select asp-for="PaymentMode" class="form-control" id="paymentMode"
+                                    asp-items="Html.GetEnumSelectList<PaymentMode>()"
+                                    onchange="onPaymentModeChange()">
+                            </select>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label asp-for="DeclaredValue" class="form-label">Declared Value</label>
+                            <input asp-for="DeclaredValue" type="number" step="0.01" class="form-control"/>
+                        </div>
+                        <div class="col-w-3 form-group" id="codAmountGroup" style="display: @(Model.PaymentMode == PaymentMode.COD ? "block" : "none")">
+                            <label asp-for="CodAmount" class="form-label required">COD Amount</label>
+                            <input asp-for="CodAmount" type="number" step="0.01" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-2">
+                        <div class="col-w-6 form-group">
+                            <label asp-for="SpecialInstructions" class="form-label">Special Instructions</label>
+                            <textarea asp-for="SpecialInstructions" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <hr/>
+
+                    <!-- Destination Branch -->
+                    <h6 class="fw-bold mb-3">Destination Branch</h6>
+                    <div class="d-flex flex-row gap-2 mb-3">
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Current Branch</label>
+                            <input type="text" class="form-control" disabled value="@(Model.DestinationBranchName ?? "Not set")"/>
+                        </div>
+                        <div class="col-w-3 form-group">
+                            <label class="form-label">Receiver Pin Code</label>
+                            <input type="text" class="form-control" id="receiverPinCode" value="@Model.ReceiverPinCode"
+                                   placeholder="Enter pin code to change branch" oninput="onPinCodeInput()"/>
+                        </div>
+                        <div class="col-w-6 form-group">
+                            <label class="form-label">New Destination Branch</label>
+                            <select class="form-control" id="branchSelect" name="DestinationBranchId">
+                            </select>
+                            <input type="hidden" asp-for="DestinationBranchId" id="destinationBranchIdHidden"/>
+                            <div id="branchLoading" style="display:none" class="text-muted small mt-2">
+                                <i class="fa fa-spinner fa-spin"></i> Looking up branches...
+                            </div>
+                            <div id="branchNotServiceable" style="display:none" class="alert alert-warning small py-1 px-2 mt-2">
+                                <i class="fa fa-info-circle"></i> No branches mapped to this pin code — showing all branches
+                            </div>
+                            <p id="branchHint" class="text-muted small mt-1"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary me-1">Update</button>
+                <a asp-action="Detail" asp-route-id="@Model.Id" class="btn btn-outline-dark">Discard</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/dist/js/vue-prod-3.4.27.min.js"></script>
+    @await Html.PartialAsync("~/Areas/Consignment/Views/Shared/_CustomerEditOffcanvas.cshtml")
+    <script>
+        let branchTimer = null;
+
+        function onPaymentModeChange() {
+            const pm = document.getElementById('paymentMode').value;
+            const codGroup = document.getElementById('codAmountGroup');
+            if (pm === '2' || pm === 'COD') {
+                codGroup.style.display = 'block';
+            } else {
+                codGroup.style.display = 'none';
+                const codInput = document.querySelector('[name="CodAmount"]');
+                if (codInput) codInput.value = '';
+            }
+        }
+
+        function onPinCodeInput() {
+            clearTimeout(branchTimer);
+            const pinCode = document.getElementById('receiverPinCode').value.trim();
+            if (pinCode.length < 4) {
+                resetBranchUI();
+                return;
+            }
+            document.getElementById('branchLoading').style.display = '';
+            document.getElementById('branchNotServiceable').style.display = 'none';
+            document.getElementById('branchHint').style.display = 'none';
+
+            branchTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`/Consignment/Consignment/CheckServiceability?pinCode=${encodeURIComponent(pinCode)}`);
+                    const data = await res.json();
+                    document.getElementById('branchLoading').style.display = 'none';
+
+                    const branches = data.branches || [];
+                    if (branches.length > 0) {
+                        if (!data.serviceable) {
+                            document.getElementById('branchNotServiceable').style.display = '';
+                        }
+                        const select = document.getElementById('branchSelect');
+                        select.innerHTML = '';
+                        const sorted = [...branches].sort((a, b) => {
+                            const ratioA = a.storageCapacity ? a.currentLoad / a.storageCapacity : 0;
+                            const ratioB = b.storageCapacity ? b.currentLoad / b.storageCapacity : 0;
+                            return ratioA - ratioB;
+                        });
+                        if (!data.serviceable) {
+                            const placeholder = document.createElement('option');
+                            placeholder.value = '';
+                            placeholder.textContent = '-- Select Branch --';
+                            select.appendChild(placeholder);
+                        }
+                        sorted.forEach(b => {
+                            const opt = document.createElement('option');
+                            opt.value = b.id;
+                            const loadPct = b.storageCapacity ? Math.round(b.currentLoad / b.storageCapacity * 100) : 0;
+                            opt.textContent = `${b.name} (${b.code}) - Load: ${loadPct}%`;
+                            select.appendChild(opt);
+                        });
+                        select.style.display = '';
+                        if (data.serviceable) {
+                            select.value = sorted[0].id;
+                            document.getElementById('destinationBranchIdHidden').value = sorted[0].id;
+                        }
+                        select.onchange = function() {
+                            document.getElementById('destinationBranchIdHidden').value = this.value;
+                        };
+                    } else {
+                        document.getElementById('branchNotServiceable').style.display = '';
+                    }
+                } catch {
+                    document.getElementById('branchLoading').style.display = 'none';
+                    document.getElementById('branchNotServiceable').style.display = '';
+                }
+            }, 300);
+        }
+
+        function resetBranchUI() {
+            document.getElementById('branchLoading').style.display = 'none';
+            document.getElementById('branchNotServiceable').style.display = 'none';
+            document.getElementById('branchHint').style.display = '';
+            document.getElementById('destinationBranchIdHidden').value = '@Model.DestinationBranchId';
+        }
+        onPinCodeInput();
+
+        // Vue app for customer info display and edit
+        const { createApp, ref } = Vue;
+        createApp({
+            setup() {
+                const sender = ref({
+                    id: @(Model.SenderId ?? 0),
+                    name: '@Html.Raw(Model.SenderName?.Replace("'", "\\'") ?? "")',
+                    phone: '@Html.Raw(Model.SenderPhone?.Replace("'", "\\'") ?? "")',
+                    addressId: @(Model.SenderAddressId ?? 0),
+                    addressDisplay: '@Html.Raw(Model.SenderAddressDisplay?.Replace("'", "\\'") ?? "")',
+                });
+
+                const receiver = ref({
+                    id: @(Model.ReceiverId ?? 0),
+                    name: '@Html.Raw(Model.ReceiverName?.Replace("'", "\\'") ?? "")',
+                    phone: '@Html.Raw(Model.ReceiverPhone?.Replace("'", "\\'") ?? "")',
+                    addressId: @(Model.ReceiverAddressId ?? 0),
+                    addressDisplay: '@Html.Raw(Model.ReceiverAddressDisplay?.Replace("'", "\\'") ?? "")',
+                });
+
+                const editCustomer = (role) => {
+                    const target = role === 'sender' ? sender : receiver;
+                    window.customerEditOffcanvas.openCustomerEdit(target.value.id, (updatedData) => {
+                        target.value.name = updatedData.name;
+                        target.value.phone = updatedData.phoneNo;
+                    });
+                };
+
+                const editAddress = (role) => {
+                    const target = role === 'sender' ? sender : receiver;
+                    window.customerEditOffcanvas.openAddressEdit(target.value.addressId, (updatedData) => {
+                        const parts = [updatedData.addressLine1, updatedData.city, updatedData.state].filter(Boolean);
+                        target.value.addressDisplay = parts.join(', ') + (updatedData.pinCode ? ' - ' + updatedData.pinCode : '');
+                    });
+                };
+
+                return { sender, receiver, editCustomer, editAddress };
+            }
+        }).mount('#consignment-update-app');
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@model Web.Areas.Acl.ViewModels.RoleVm
+
+@{
+    ViewData["Title"] = "Create Role";
+    Layout = "_Layout";
+}
+
+
+<form method="post" asp-action="Create" asp-controller="Role" asp-area="Acl">
+    <div class="card col-6">
+        <h3 class="card-header">New Role</h3>
+        <div class="card-body">
+            <div class="row w-full d-flex gap-2">
+                <div class="field">
+                    <div class="form-group">
+                        <label class="form-label required" asp-for="Name"></label>
+                        <input type="text" asp-for="Name" class="form-control" required/>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                @*<div class="field">
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Priority"></label>
+                        <input type="number" asp-for="Priority" class="form-control"/>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>*@
+                <div class="field mt-2">
+                    <div class="form-group">
+                        <label class="form-check form-switch cursor-pointer" asp-for="IsGlobal">
+                            <input type="checkbox" asp-for="IsGlobal" class="form-control form-check-input cursor-pointer"/>
+                            <span class="form-check-label"> Is Global</span>
+                        </label>
+                        <span asp-validation-for="IsGlobal" class="text-danger"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+
+</form>

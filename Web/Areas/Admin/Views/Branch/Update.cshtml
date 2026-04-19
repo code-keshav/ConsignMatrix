@@ -1,0 +1,223 @@
+@model Web.Areas.Admin.ViewModels.BranchEditVm
+@using Base.Enum
+
+@{
+    ViewData["Title"] = "Update Branch";
+    Layout = "_Layout";
+}
+
+<form method="post" asp-action="Update" asp-controller="Branch" asp-area="Admin">
+    <div class="card col-8">
+        <h3 class="card-header">Update Branch</h3>
+        <div class="card-body">
+
+            <div class="row w-full">
+                <div class="col-6 d-flex flex-column gap-2">
+                    <div class="field" hidden>
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Id"></label>
+                            <input type="text" asp-for="Id" class="form-control" required/>
+                            <span asp-validation-for="Id" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Name"></label>
+                            <input type="text" asp-for="Name" class="form-control" required/>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Code"></label>
+                            <input type="text" asp-for="Code" class="form-control" required/>
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="BranchType"></label>
+                            <select asp-for="BranchType" class="form-select" required>
+                                <option value="@((int)BranchType.ServiceCenter)">Service Center</option>
+                                <option value="@((int)BranchType.Hub)">Hub</option>
+                            </select>
+                            <span asp-validation-for="BranchType" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Address"></label>
+                            <input type="text" asp-for="Address" class="form-control" required/>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="City"></label>
+                            <input type="text" asp-for="City" class="form-control"/>
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="State"></label>
+                            <input type="text" asp-for="State" class="form-control"/>
+                            <span asp-validation-for="State" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 d-flex flex-column gap-2">
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Email"></label>
+                            <input type="text" asp-for="Email" class="form-control" required/>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="ContactNo"></label>
+                            <input type="text" asp-for="ContactNo" class="form-control"/>
+                            <span asp-validation-for="ContactNo" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="StorageCapacity"></label>
+                            <input type="number" step="0.01" asp-for="StorageCapacity" class="form-control"/>
+                            <span asp-validation-for="StorageCapacity" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="OperatingHours"></label>
+                            <input type="text" asp-for="OperatingHours" class="form-control" placeholder="e.g. 9:00 AM - 6:00 PM"/>
+                            <span asp-validation-for="OperatingHours" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="Latitude"></label>
+                            <input type="number" step="0.000001" asp-for="Latitude" class="form-control"/>
+                            <span asp-validation-for="Latitude" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label" asp-for="Longitude"></label>
+                            <input type="number" step="0.000001" asp-for="Longitude" class="form-control"/>
+                            <span asp-validation-for="Longitude" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn btn-primary">Update</button>
+            <a asp-action="Report" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+
+</form>
+
+<!-- Pin Codes Section -->
+<div class="card col-8 mt-3">
+    <h3 class="card-header">Pin Codes</h3>
+    <div class="card-body">
+        <div class="d-flex gap-2 mb-3">
+            <input type="text" id="newPinCode" class="form-control" style="max-width: 200px;" placeholder="Enter pin code"/>
+            <button type="button" class="btn btn-primary btn-sm" onclick="addPinCode()">
+                <i class="fa fa-plus me-1"></i> Add
+            </button>
+        </div>
+        <table class="table table-bordered table-sm">
+            <thead>
+            <tr>
+                <th>SN</th>
+                <th>Pin Code</th>
+                <th>Active</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="pinCodeTableBody">
+            <tr id="pinCodeLoading">
+                <td colspan="4" class="text-center">Loading...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const branchId = @Model.Id;
+
+    document.addEventListener('DOMContentLoaded', loadPinCodes);
+
+    function loadPinCodes() {
+        fetch(`/Admin/Branch/GetPinCodes?branchId=${branchId}`)
+            .then(r => r.json())
+            .then(data => {
+                const tbody = document.getElementById('pinCodeTableBody');
+                const items = data.content || [];
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No pin codes assigned</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                items.forEach((p, i) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${p.pinCode}</td>
+                        <td>${p.isActive ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>'}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removePinCode(${p.id})"><i class="fa fa-trash"></i></button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(() => {
+                document.getElementById('pinCodeTableBody').innerHTML =
+                    '<tr><td colspan="4" class="text-center text-danger">Failed to load pin codes</td></tr>';
+            });
+    }
+
+    function addPinCode() {
+        const input = document.getElementById('newPinCode');
+        const pinCode = input.value.trim();
+        if (!pinCode) return;
+
+        fetch('/Admin/Branch/AddPinCode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ branchId: branchId, pinCode: pinCode, isActive: true })
+        })
+        .then(r => {
+            if (!r.ok) return r.json().then(d => { throw new Error(d.error?.message || 'Failed'); });
+            return r.json();
+        })
+        .then(() => {
+            input.value = '';
+            loadPinCodes();
+        })
+        .catch(e => alert(e.message));
+    }
+
+    function removePinCode(id) {
+        if (!confirm('Remove this pin code?')) return;
+
+        fetch('/Admin/Branch/RemovePinCode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(id)
+        })
+        .then(r => {
+            if (!r.ok) return r.json().then(d => { throw new Error(d.error?.message || 'Failed'); });
+            return r.json();
+        })
+        .then(() => loadPinCodes())
+        .catch(e => alert(e.message));
+    }
+</script>
+}

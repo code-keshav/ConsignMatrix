@@ -1,0 +1,119 @@
+@model Web.Areas.Admin.ViewModels.BranchVm
+@using Base.Enum
+
+@{
+    ViewData["Title"] = "New Branch";
+    Layout = "_Layout";
+}
+
+
+<form method="post" asp-action="Create" asp-controller="Branch" asp-area="Admin">
+    <div class="card col-8">
+        <h5 class="card-header">New Branch</h5>
+        <div class="card-body">
+            <div class="d-flex flex-column gap-2">
+                <div class="row w-full">
+                    <div class="col-6 d-flex flex-column gap-2">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Name"></label>
+                                <input type="text" asp-for="Name" class="form-control" required/>
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Code"></label>
+                                <input type="text" asp-for="Code" class="form-control" required/>
+                                <span asp-validation-for="Code" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="BranchType"></label>
+                                <select asp-for="BranchType" class="form-select" required>
+                                    <option value="@((int)BranchType.ServiceCenter)">Service Center</option>
+                                    <option value="@((int)BranchType.Hub)">Hub</option>
+                                </select>
+                                <span asp-validation-for="BranchType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Address"></label>
+                                <input type="text" asp-for="Address" class="form-control" required/>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="City"></label>
+                                <input type="text" asp-for="City" class="form-control"/>
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="State"></label>
+                                <input type="text" asp-for="State" class="form-control"/>
+                                <span asp-validation-for="State" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6 d-flex flex-column gap-2">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Email"></label>
+                                <input type="text" asp-for="Email" class="form-control" required/>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="ContactNo"></label>
+                                <input type="text" asp-for="ContactNo" class="form-control"/>
+                                <span asp-validation-for="ContactNo" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="StorageCapacity"></label>
+                                <input type="number" step="0.01" asp-for="StorageCapacity" class="form-control"/>
+                                <span asp-validation-for="StorageCapacity" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="OperatingHours"></label>
+                                <input type="text" asp-for="OperatingHours" class="form-control" placeholder="e.g. 9:00 AM - 6:00 PM"/>
+                                <span asp-validation-for="OperatingHours" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Latitude"></label>
+                                <input type="number" step="0.000001" asp-for="Latitude" class="form-control"/>
+                                <span asp-validation-for="Latitude" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Longitude"></label>
+                                <input type="number" step="0.000001" asp-for="Longitude" class="form-control"/>
+                                <span asp-validation-for="Longitude" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn btn-primary">Create</button>
+            <a asp-action="Report" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+
+</form>
+
+

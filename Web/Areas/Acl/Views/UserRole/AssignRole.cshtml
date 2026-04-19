@@ -1,0 +1,47 @@
+﻿
+
+@{
+    ViewData["Title"] = "Assign Role";
+    Layout = "_Layout";
+}
+
+
+<a href="#" class="btn" data-bs-toggle="modal" data-bs-target="#modal-simple">
+    Simple modal
+</a>
+
+<div class="modal modal-blur fade" id="modal-simple" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="w-full d-flex flex-column gap-2">
+
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required">User</label>
+                                <input type="text" class="form-control" required disabled/>
+                                @* <span asp-validation-for="Name" class="text-danger"></span> *@
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required">Role</label>
+                                <input type="text" class="form-control" required/>
+                                @* <span asp-validation-for="Name" class="text-danger"></span> *@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Assign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

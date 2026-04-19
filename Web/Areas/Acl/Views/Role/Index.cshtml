@@ -1,0 +1,49 @@
+﻿@model List<Web.Areas.Acl.ViewModels.RoleVm>
+
+@{
+    ViewData["Title"] = "Roles";
+    Layout = "_Layout";
+}
+
+
+
+<div class="container-xl">
+    <div class="mt-2">
+        <div class="d-flex justify-content-between align-items-end mb-1">
+            <span class="header_text">Roles</span>
+            <div class="d-flex gap-2">
+                <a asp-area="Acl" asp-controller="Role" asp-action="Create" class="btn btn-primary btn-sm">
+                    Create
+                </a>
+            </div>
+        </div>
+    </div>
+    <table class="table table_bold table-bordered table-responsive">
+        <thead>
+        <th>SN</th>
+        <th>Name</th>
+        @* <th>Priority</th> *@
+        <th>Is Global</th>
+        <th>Action</th>
+        </thead>
+        <tbody>
+        @{
+            var count = 0;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@(++count)</td>
+                    <td>@item.Name</td>
+                    @* <td>@item.Priority</td> *@
+                    <td>@(item.IsGlobal? "Yes" : "No")</td>
+                    <td>
+                        <a class="text-decoration-none" asp-controller="RolePermission" asp-action="Index" asp-route-roleId="@item.Id">Assign Permission</a> <span> | </span>
+                        <a class="text-decoration-none" asp-action="Update" asp-route-id="@item.Id">Edit</a> <span> | </span>
+                        <a class="text-decoration-none req-confirm" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

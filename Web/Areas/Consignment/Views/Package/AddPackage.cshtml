@@ -1,0 +1,71 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Package.PackageAddVm
+
+@{
+    ViewBag.Title = "Add Package";
+    Layout = "_Layout";
+}
+
+<form asp-area="Consignment" asp-controller="Package" asp-action="AddPackage" method="post">
+    <div class="card col-12">
+        <h5 class="card-header">Add Package to @Model.TrackingNumber</h5>
+        <div class="card-body">
+            <input asp-for="ConsignmentId" hidden/>
+            <input asp-for="TrackingNumber" hidden/>
+            <div class="row w-full">
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-3 form-group">
+                        <label asp-for="Weight" class="form-label required">Weight (kg)</label>
+                        <input asp-for="Weight" type="number" step="0.01" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="Length" class="form-label required">Length (cm)</label>
+                        <input asp-for="Length" type="number" step="0.01" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="Width" class="form-label required">Width (cm)</label>
+                        <input asp-for="Width" type="number" step="0.01" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="Height" class="form-label required">Height (cm)</label>
+                        <input asp-for="Height" type="number" step="0.01" class="form-control"/>
+                    </div>
+                </div>
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Package Type</label>
+                        <select asp-for="PackageType" class="form-control"
+                                asp-items="Html.GetEnumSelectList<PackageType>()">
+                        </select>
+                    </div>
+                    <div class="col-w-4 form-group">
+                        <label asp-for="ContentDescription" class="form-label">Content Description</label>
+                        <input asp-for="ContentDescription" class="form-control"/>
+                    </div>
+                </div>
+                <div class="d-flex flex-row gap-3 mt-2">
+                    <div class="form-check">
+                        <input asp-for="IsFragile" class="form-check-input"/>
+                        <label asp-for="IsFragile" class="form-check-label">Fragile</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="IsHazardous" class="form-check-input"/>
+                        <label asp-for="IsHazardous" class="form-check-label">Hazardous</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="CanBeStacked" class="form-check-input"/>
+                        <label asp-for="CanBeStacked" class="form-check-label">Stackable</label>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="RequiresColdChain" class="form-check-input"/>
+                        <label asp-for="RequiresColdChain" class="form-check-label">Cold Chain</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Add Package</button>
+            <a asp-area="Consignment" asp-controller="Consignment" asp-action="Detail" asp-route-id="@Model.ConsignmentId" class="btn btn-outline-dark">Discard</a>
+        </div>
+    </div>
+</form>

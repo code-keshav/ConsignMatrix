@@ -1,0 +1,129 @@
+﻿@model Web.Areas.Consignment.ViewModels.CustomerDetailVm
+
+@{
+    ViewData["Title"] = "Customer Detail";
+}
+
+<div class="container">
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+            <h4 class="mb-0">Customer Details</h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Name</label>
+                    <p>@Model.Name</p>
+                </div>
+
+                <div class="col-w-3">
+                    <label class="fw-bold">Customer Type</label>
+                    <p>@Model.CustomerType</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Phone Number</label>
+                    <p>@Model.PhoneNo</p>
+                </div>
+
+                <div class="col-w-3">
+                    <label class="fw-bold">Secondary Phone Number</label>
+                    <p>@Model.SecondaryPhoneNo</p>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-w-3">
+                    <label class="fw-bold">Email</label>
+                    <p>@Model.Email</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Status</label>
+                    @if (Model.IsActive)
+                    {
+                        <p class="badge bg-success d-block col-w-3"> @Model.Status</p>
+                    }
+                    else
+                    {
+                        <p class="badge bg-warning d-block col-w-3"> @Model.Status</p>
+                    }
+                </div>
+
+            </div>
+
+            <hr/>
+
+            <div class="mb-3">
+                <h5> Customer Addresses
+                    <a class="btn btn-primary btn-sm float-end" asp-area="Consignment" asp-controller="CustomerAddress" asp-route-id="@Model.Id" asp-action="AddAddress">Add Address </a>
+                </h5>
+
+            </div>
+
+            @if (Model.AddressVms.Any())
+            {
+                <div class="card mb-3 border">
+
+                    <div class="card-body">
+                        <div class="">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Address Type</th>
+                                    <th>Address Line 1</th>
+                                    <th>Address Line 2</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>PinCode</th>
+                                    <th>ContactNo</th>
+                                    <th>Landmark</th>
+                                    <th>Latitude</th>
+                                    <th>Longitude</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody> @foreach (var address in Model.AddressVms)
+                                {
+                                    <tr>
+                                        <td>
+                                            @address.AddressType
+                                            @if (address.IsDefault)
+                                            {
+                                                <span class="badge bg-info text-sm-center">Default</span>
+                                            }
+                                        </td>
+                                        <td>@address.AddressLine1</td>
+                                        <td>@address.AddressLine2</td>
+                                        <td>@address.City</td>
+                                        <td>@address.State</td>
+                                        <td>@address.PinCode</td>
+                                        <td>@address.ContactNo</td>
+                                        <td>@address.Landmark</td>
+                                        <td>@address.Latitude</td>
+                                        <td>@address.Longitude </td>
+                                        <td>
+                                            <a class="text-info text-decoration-none" asp-action="Update" asp-controller="CustomerAddress" title="Edit"
+                                               asp-route-id="@address.AddressId" asp-route-customerId="@Model.Id">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No addresses available.</p>
+            }
+
+        </div>
+
+    </div>
+
+</div>

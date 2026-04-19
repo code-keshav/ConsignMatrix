@@ -1,0 +1,55 @@
+﻿.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+    align-items: end;
+
+    container-type: inline-size;
+}
+
+:root {
+    --col-count: 1;
+}
+
+.filter-container .filter-col {
+    padding: .4rem;
+    max-width: calc(100% / var(--col-count));
+    width: calc(100% / var(--col-count));
+    flex-grow: 1;
+}
+
+.filter-container .filter-btn{
+    display: flex;
+    align-self: end;
+    flex-grow: 1;
+    padding: .4rem;
+    justify-content: end;
+}
+
+@container (min-width: 465px) {
+    .filter-col { --col-count: 2; }
+}
+
+@container (min-width: 705px) {
+    .filter-col { --col-count: 3; }
+}
+
+@container (min-width: 915px) {
+    .filter-col { --col-count: 4; }
+}
+
+@container (min-width: 1120px) {
+    .filter-col { --col-count: 5; }
+}
+
+@container (min-width: 1329px) {
+    .filter-col { --col-count: 6; }
+}
+
+@container (min-width: 1569px) {
+    .filter-col { --col-count: 7; }
+}
+
+@container (min-width: 1777px) {
+    .filter-col { --col-count: 8; }
+}

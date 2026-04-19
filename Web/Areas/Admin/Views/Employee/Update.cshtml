@@ -1,0 +1,194 @@
+@model Web.Areas.Admin.ViewModels.EmployeeEditVm
+
+@{
+    ViewData["Title"] = "Update Employee";
+    Layout = "_Layout";
+}
+
+<div id="employee-app">
+    <form method="post" asp-action="Update" asp-controller="Employee" asp-area="Admin">
+        <div class="card col-10">
+            <h3 class="card-header">Update Employee</h3>
+            <div class="card-body">
+                <div class="row w-full">
+                    <div class="field" hidden>
+                        <input type="hidden" asp-for="Id"/>
+                    </div>
+
+                    <!-- Left Column -->
+                    <div class="col-6 d-flex flex-column gap-2">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="EmployeeCode"></label>
+                                <input type="text" asp-for="EmployeeCode" class="form-control" required/>
+                                <span asp-validation-for="EmployeeCode" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Name"></label>
+                                <input type="text" asp-for="Name" class="form-control" required/>
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="Phone"></label>
+                                <input type="text" asp-for="Phone" class="form-control" required/>
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="AlternatePhone"></label>
+                                <input type="text" asp-for="AlternatePhone" class="form-control"/>
+                                <span asp-validation-for="AlternatePhone" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Email"></label>
+                                <input type="email" asp-for="Email" class="form-control"/>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Address"></label>
+                                <input type="text" asp-for="Address" class="form-control"/>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="CurrentBranchId"></label>
+                                <select asp-for="CurrentBranchId" class="form-control" asp-items="@Model.BranchOptions" required></select>
+                                <span asp-validation-for="CurrentBranchId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-6 d-flex flex-column gap-2">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Department"></label>
+                                <input type="text" asp-for="Department" class="form-control"/>
+                                <span asp-validation-for="Department" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="Designation"></label>
+                                <input type="text" asp-for="Designation" class="form-control"/>
+                                <span asp-validation-for="Designation" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="JoiningDate"></label>
+                                <input type="date" asp-for="JoiningDate" class="form-control" required/>
+                                <span asp-validation-for="JoiningDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label" asp-for="TerminationDate"></label>
+                                <input type="date" asp-for="TerminationDate" class="form-control"/>
+                                <span asp-validation-for="TerminationDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="EmployeeType"></label>
+                                <select asp-for="EmployeeType" class="form-control"
+                                        asp-items="Html.GetEnumSelectList<Base.Enum.EmployeeType>()"
+                                        v-model="employeeType" required>
+                                </select>
+                                <span asp-validation-for="EmployeeType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="EmployeeStatus"></label>
+                                <select asp-for="EmployeeStatus" class="form-control"
+                                        asp-items="Html.GetEnumSelectList<Base.Enum.EmployeeStatus>()" required>
+                                </select>
+                                <span asp-validation-for="EmployeeStatus" class="text-danger"></span>
+                            </div>
+                        </div>
+                        @if (Model.HasUserAccount)
+                        {
+                            <div class="field mt-2">
+                                <span class="badge bg-success"><i class="fa fa-check me-1"></i> Has System Login</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Driver Fields (conditional) -->
+                    <div class="col-12 mt-3" v-show="isDriver">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Driver Details</h6>
+                                @if (Model.DriverId.HasValue)
+                                {
+                                    <a class="btn btn-sm btn-light" asp-area="Admin" asp-controller="Driver" asp-action="Update" asp-route-id="@Model.DriverId">
+                                        <i class="fa fa-external-link-alt"></i> View Driver Page
+                                    </a>
+                                }
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <div class="field">
+                                            <div class="form-group">
+                                                <label class="form-label required" asp-for="LicenseNumber"></label>
+                                                <input type="text" asp-for="LicenseNumber" class="form-control"
+                                                       v-bind:required="isDriver"/>
+                                                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="field">
+                                            <div class="form-group">
+                                                <label class="form-label required" asp-for="LicenseExpiry"></label>
+                                                <input type="date" asp-for="LicenseExpiry" class="form-control"
+                                                       v-bind:required="isDriver"/>
+                                                <span asp-validation-for="LicenseExpiry" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <script src="~/dist/js/vue-global-3.4.27.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    employeeType: '@((int)Model.EmployeeType)'
+                }
+            },
+            computed: {
+                isDriver() {
+                    return this.employeeType == '2';
+                }
+            }
+        }).mount('#employee-app');
+    </script>
+}

@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <meta name="color-scheme" content="light dark"/>
+    <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)"/>
+    <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)"/>
+    <title>@ViewData["Title"] | Consign Matrix</title>
+
+    <!-- AdminLTE CSS files -->
+    @* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@fontsource/source-sans-3@@5.0.12/index.css" *@
+    @*       integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q=" crossorigin="anonymous"/> *@
+
+    <link rel="stylesheet" href="~/css/adminlte.min.css"/>
+    @* <link rel="stylesheet" href="~/css/font-source.css"/> *@
+    <link rel="stylesheet" href="~/dist/css/overlayscrollbars.min.css"/>
+    <link rel="stylesheet" href="~/icons/bootstrap-icon.min.css"/>
+
+    <link href="//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <link href="~/css/custom.css?1684106062" rel="stylesheet"/>
+    <link href="~/icons/all.min.css" rel="stylesheet"/>
+    <link href="~/dist/css/custom-filter.css" rel="stylesheet"/>
+    @* <link href="~/lib/DataTables/datatables.min.css" rel="stylesheet"/> *@
+
+
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: calc(1.5em + 0.75rem + 2px);
+        }
+    </style>
+</head>
+<body class="layout-fixed fixed-header sidebar-expand-lg sidebar-open bg-body-tertiary">
+<div class="app-wrapper">
+    @await Html.PartialAsync("Partials/_MainNavbarView")
+
+    @await Html.PartialAsync("Partials/_SideNavbarView")
+
+    <main class="app-main">
+        <!-- Content header -->
+        @*<div class="app-content-header">
+                <div class="container-fluid">
+                    @await Html.PartialAsync("Partials/_ContentHeader")
+                </div>
+            </div>*@
+
+        <div class="app-content">
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
+        </div>
+    </main>
+
+    @*
+        <!-- AdminLTE Footer -->
+        @await Html.PartialAsync("Partials/_AdminLTEFooter")*@
+</div>
+<script src="~/dist/js/jquery/jQuery.js"></script>
+<script src="//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="~/dist/libs/DataTables/datatables.min.js"></script>
+<script src="~/icons/all.min.js"></script>
+
+<!-- AdminLTE JavaScript -->
+@* <script src="//cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js" *@
+@*         crossorigin="anonymous"></script> *@
+<script src="~/dist/js/overlayscrollbars.min.js"></script>
+<script src="~/js/adminlte.min.js"></script>
+<script src="~/js/popper.js"></script>
+<script src="~/dist/js/bootstrap.min.js"></script>
+
+
+
+@* @await Component.InvokeAsync("Notify") *@
+
+<script>
+    $(document).ready(function () {
+        $('.select2').select2({Width: '100%'});
+    });
+</script>
+
+<script>
+    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+    const Default = {
+        scrollbarTheme: 'os-theme-light',
+        scrollbarAutoHide: 'leave',
+        scrollbarClickScroll: true,
+    };
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+        if (sidebarWrapper && typeof OverlayScrollbarsGlobal !== 'undefined') {
+            OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+                scrollbars: {
+                    theme: Default.scrollbarTheme,
+                    autoHide: Default.scrollbarAutoHide,
+                    clickScroll: Default.scrollbarClickScroll,
+                },
+            });
+        }
+    });
+</script>
+
+
+<script>
+    function InitializeDataTable(tableId = "datatable", options = {}) {
+        const defaultOptions = {
+            "searching": true,
+            "paging": false,
+            "fixedHeader": true,
+            "displayLength": -1,
+            "lengthChange": false,
+            "info": false,
+            "autoWidth": true,
+        }
+        $(`#${tableId}`).DataTable({
+            ...defaultOptions,
+            ...options,
+        });
+    }
+
+    $(document).ready(function () {
+        InitializeDataTable();
+    });
+</script>
+
+<partial name="Partials/_SweetAlertConfig" />
+
+@await RenderSectionAsync("Scripts", required: false)
+
+</body>

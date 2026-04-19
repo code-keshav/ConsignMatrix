@@ -1,0 +1,111 @@
+﻿@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.CustomerCreateVm
+
+@{
+    ViewBag.Title = "Create Customer";
+    Layout = "_Layout";
+}
+<form asp-action="Create" method="post">
+    <div class="card col-12">
+        <h5 class="card-header">New Customer</h5>
+        <div class="card-body">
+            <div class="row w-full">
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label required">Customer Type</label>
+                        <select asp-for="CustomerType" class="form-control"
+                                asp-items="Html.GetEnumSelectList<CustomerType>()">
+                            <option value="">-- Select Customer Type --</option>
+                        </select>
+                    </div>
+                    <div class="col-w-4 form-group">
+                        <label class="form-label required" asp-for="Name">Name </label>
+                        <input asp-for="Name" class="form-control"/>
+                    </div>
+
+                    <div class="col-w-4 form-group">
+                        <label asp-for="PhoneNo" class="form-label required">Phone No </label>
+                        <input asp-for="PhoneNo" class="form-control"/>
+                    </div>
+
+                </div>
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Secondary Phone No</label>
+                        <input asp-for="SecondaryPhoneNo" class="form-control"/>
+                    </div>
+                    <div class="col-w-4 form-group">
+                        <label class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control"/>
+                    </div>
+
+                </div>
+
+                <br/>
+            </div>
+        </div>
+        <hr class="m-0"/>
+        <h5 class="card-header">Add Customer Address</h5>
+        <div class="card-body">
+            <div class="row w-full">
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-3 form-group">
+                        <label class="form-label required">Address Type</label>
+                        <select asp-for="HomeAddress.AddressType" class="form-control"
+                                asp-items="Html.GetEnumSelectList<AddressType>()">
+                        </select>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label class="form-label required" asp-for="HomeAddress.AddressLine1"> Address Line 1 </label>
+                        <input asp-for="HomeAddress.AddressLine1" class="form-control"/>
+                    </div>
+
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.AddressLine2" class="form-label">Address Line 2 </label>
+                        <input asp-for="HomeAddress.AddressLine2" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.City" class="form-label required">City </label>
+                        <input asp-for="HomeAddress.City" class="form-control"/>
+                    </div>
+
+
+                </div>
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.State" class="form-label required">State </label>
+                        <input asp-for="HomeAddress.State" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.ContactNo" class="form-label">Contact No </label>
+                        <input asp-for="HomeAddress.ContactNo" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.PinCode" class="form-label required">Pin No </label>
+                        <input asp-for="HomeAddress.PinCode" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.Landmark" class="form-label">Landmark</label>
+                        <input asp-for="HomeAddress.Landmark" class="form-control"/>
+                    </div>
+                </div>
+                <div class="d-flex flex-row gap-2">
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.Latitude" class="form-label">Latitude</label>
+                        <input asp-for="HomeAddress.Latitude" class="form-control"/>
+                    </div>
+                    <div class="col-w-3 form-group">
+                        <label asp-for="HomeAddress.Longitude" class="form-label">Longitude</label>
+                        <input asp-for="HomeAddress.Longitude" class="form-control"/>
+                    </div>
+                    <br/>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-outline-dark">Discard</a>
+        </div>
+    </div>
+</form>
+

@@ -1,0 +1,564 @@
+@model Web.Areas.Admin.ViewModels.AdminDashboardVm
+
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "_Layout";
+}
+
+<!-- Row 0: Filter Bar -->
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3 mt-2">
+    <span class="fw-semibold">Dashboard</span>
+    <div class="ms-auto">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Date range">
+            <a href="?daysBack=1"
+               class="btn @(Model.SelectedDaysBack == 1 ? "btn-primary" : "btn-outline-primary")">Today</a>
+            <a href="?daysBack=7"
+               class="btn @(Model.SelectedDaysBack == 7 ? "btn-primary" : "btn-outline-primary")">Last 7 Days</a>
+            <a href="?daysBack=30"
+               class="btn @(Model.SelectedDaysBack == 30 ? "btn-primary" : "btn-outline-primary")">Last 30 Days</a>
+        </div>
+    </div>
+</div>
+
+<!-- Row 1: KPI Cards -->
+<div class="row">
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-primary">
+            <div class="inner">
+                <h3>@Model.TotalActiveConsignments</h3>
+                <p>Active Consignments</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-box"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-info">
+            <div class="inner">
+                <h3>@Model.TodaysBookings</h3>
+                <p>Today's Bookings</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-circle-plus"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-warning">
+            <div class="inner">
+                <h3>@Model.PendingPickups</h3>
+                <p>Pending Pickups</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-secondary">
+            <div class="inner">
+                <h3>@Model.InTransitCount</h3>
+                <p>In Transit</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-road"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-info">
+            <div class="inner">
+                <h3>@Model.OutForDeliveryCount</h3>
+                <p>Out for Delivery</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-truck"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-lg-4 col-md-4 col-sm-6 col-6 mb-3">
+        <div class="small-box text-bg-success">
+            <div class="inner">
+                <h3>@Model.DeliveredToday</h3>
+                <p>Delivered Today</p>
+            </div>
+            <div class="icon"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 2: Charts -->
+<div class="row">
+    <div class="col-lg-8 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Booking Trend</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartBookingTrend"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Consignment Status</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartStatusDistribution"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 3: Operations -->
+<div class="row">
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Pickup Performance</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartPickupPerformance"></div>
+                <div class="row text-center mt-2">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Scheduled Today</small>
+                        <span class="fw-bold">@Model.PickupsScheduledToday</span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Completed Today</small>
+                        <span class="fw-bold text-success">@Model.PickupsCompletedToday</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Trip Overview</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartTripOverview"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Service Type Distribution</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartServiceType"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row 4: Tables -->
+<div class="row">
+    @*<!-- Recent Consignments -->
+    <div class="col-lg-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Recent Consignments</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tracking #</th>
+                            <th class="d-none d-md-table-cell">Sender</th>
+                            <th class="d-none d-md-table-cell">Receiver</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model.RecentConsignments.Any())
+                        {
+                            var sn = 0;
+                            @foreach (var item in Model.RecentConsignments)
+                            {
+                                sn++;
+                                <tr>
+                                    <td>@sn</td>
+                                    <td>
+                                        <a href="/Consignment/Consignment/Detail?id=@item.Id">@item.TrackingNumber</a>
+                                    </td>
+                                    <td class="d-none d-md-table-cell">@item.SenderName</td>
+                                    <td class="d-none d-md-table-cell">@item.ReceiverName</td>
+                                    <td><span class="badge @item.StatusBadgeClass">@item.LatestStatus</span></td>
+                                    <td>@item.RecDate</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No consignments yet</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@
+
+    <!-- Upcoming Pickups -->
+    <div class="col-lg-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Upcoming Pickups</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tracking #</th>
+                            <th>Date</th>
+                            <th class="d-none d-md-table-cell">Slot</th>
+                            <th>Status</th>
+                            <th class="d-none d-md-table-cell">Driver</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model.UpcomingPickups.Any())
+                        {
+                            var sn = 0;
+                            @foreach (var item in Model.UpcomingPickups)
+                            {
+                                sn++;
+                                <tr>
+                                    <td>@sn</td>
+                                    <td>@item.TrackingNumber</td>
+                                    <td>@item.PickupDate</td>
+                                    <td class="d-none d-md-table-cell">@item.PickupSlot</td>
+                                    <td><span class="badge @item.StatusBadgeClass">@item.TaskStatus</span></td>
+                                    <td class="d-none d-md-table-cell">@item.AssignedDriverName</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No upcoming pickups</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Trips -->
+    <div class="col-lg-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Active Trips</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Trip #</th>
+                            <th class="d-none d-md-table-cell">Type</th>
+                            <th>Route</th>
+                            <th>Status</th>
+                            <th class="d-none d-md-table-cell">Consignments</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model.ActiveTrips.Any())
+                        {
+                            var sn = 0;
+                            @foreach (var item in Model.ActiveTrips)
+                            {
+                                sn++;
+                                <tr>
+                                    <td>@sn</td>
+                                    <td>@item.TripNumber</td>
+                                    <td class="d-none d-md-table-cell">@item.TripType</td>
+                                    <td>@item.FromBranch &rarr; @item.ToBranch</td>
+                                    <td><span class="badge @item.TripStatusBadgeClass">@item.TripStatus</span></td>
+                                    <td class="d-none d-md-table-cell">@item.ConsignmentCount</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No active trips</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*
+    <!-- Recent Issues -->
+    <div class="col-lg-6 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Recent Issues</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tracking #</th>
+                            <th>Issue</th>
+                            <th class="d-none d-md-table-cell">Remarks</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if (Model.RecentIssues.Any())
+                        {
+                            var sn = 0;
+                            @foreach (var item in Model.RecentIssues)
+                            {
+                                sn++;
+                                <tr>
+                                    <td>@sn</td>
+                                    <td>
+                                        <a href="/Consignment/Consignment/Detail?id=@item.ConsignmentId">@item.TrackingNumber</a>
+                                    </td>
+                                    <td><span class="badge @item.IssueBadgeClass">@item.IssueType</span></td>
+                                    <td class="d-none d-md-table-cell">@item.Remarks</td>
+                                    <td>@item.OccurredAt</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No issues reported</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>*@
+</div>
+
+<!-- Row 5: Branch & Fleet -->
+<div class="row">
+    <div class="col-lg-8 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Branch Capacity Utilization</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                @if (Model.BranchCapacities.Any())
+                {
+                    @foreach (var branch in Model.BranchCapacities)
+                    {
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="fw-medium">@branch.Name <small class="text-muted">(@branch.Code)</small></span>
+                                <span class="text-muted">
+                                    @branch.CurrentLoad / @branch.StorageCapacity
+                                    <small>(@branch.UtilizationPercent%)</small>
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 16px;">
+                                <div class="progress-bar @branch.BarColorClass"
+                                     role="progressbar"
+                                     style="width: @(branch.UtilizationPercent > 100 ? 100 : branch.UtilizationPercent)%"
+                                     aria-valuenow="@branch.UtilizationPercent"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-3">No branch data available</div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12 mb-3">
+        <div class="card h-100">
+            <div class="card-header">
+                <h3 class="card-title">Vehicle Availability</h3>
+            </div>
+            <div class="card-body p-2 p-md-3">
+                <div id="chartVehicleStatus"></div>
+                <div class="row text-center mt-2">
+                    <div class="col-6 col-md-3 col-lg-6 mb-2">
+                        <small class="text-muted d-block">Available</small>
+                        <span class="fw-bold text-success">@Model.VehiclesAvailable</span>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-6 mb-2">
+                        <small class="text-muted d-block">On Trip</small>
+                        <span class="fw-bold text-primary">@Model.VehiclesOnTrip</span>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-6 mb-2">
+                        <small class="text-muted d-block">Maintenance</small>
+                        <span class="fw-bold text-warning">@Model.VehiclesMaintenance</span>
+                    </div>
+                    <div class="col-6 col-md-3 col-lg-6 mb-2">
+                        <small class="text-muted d-block">Inactive</small>
+                        <span class="fw-bold text-secondary">@Model.VehiclesInactive</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/dist/libs/apexcharts/dist/apexcharts.min.js"></script>
+    <script>
+        // Chart data from server
+        var statusData = @Json.Serialize(Model.StatusDistribution);
+        var trendData = @Json.Serialize(Model.BookingTrend);
+        var serviceData = @Json.Serialize(Model.ServiceTypeDistribution);
+        var vehicleData = @Json.Serialize(Model.VehicleStatusChart);
+
+        var defaultResponsive = [
+            {
+                breakpoint: 768,
+                options: {
+                    chart: { height: 250 },
+                    legend: { position: 'bottom', fontSize: '11px' },
+                    dataLabels: { style: { fontSize: '10px' } }
+                }
+            },
+            {
+                breakpoint: 480,
+                options: {
+                    chart: { height: 200 },
+                    legend: { show: false }
+                }
+            }
+        ];
+
+        // 1. Booking Trend - Area Chart
+        if (trendData.length > 0) {
+            new ApexCharts(document.querySelector("#chartBookingTrend"), {
+                chart: { type: 'area', height: 350, toolbar: { show: false } },
+                series: [{ name: 'Bookings', data: trendData.map(t => t.count) }],
+                xaxis: { categories: trendData.map(t => t.date) },
+                stroke: { curve: 'smooth', width: 2 },
+                colors: ['#0d6efd'],
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
+                dataLabels: { enabled: false },
+                grid: { borderColor: '#f1f1f1' },
+                noData: { text: 'No booking data' },
+                responsive: defaultResponsive
+            }).render();
+        } else {
+            document.querySelector("#chartBookingTrend").innerHTML = '<div class="text-center text-muted py-5">No booking data for this period</div>';
+        }
+
+        // 2. Status Distribution - Donut Chart
+        if (statusData.length > 0) {
+            new ApexCharts(document.querySelector("#chartStatusDistribution"), {
+                chart: { type: 'donut', height: 350 },
+                series: statusData.map(s => s.value),
+                labels: statusData.map(s => s.label),
+                colors: statusData.map(s => s.color),
+                legend: { position: 'bottom', fontSize: '12px' },
+                dataLabels: { enabled: true, formatter: function(val, opts) { return opts.w.config.series[opts.seriesIndex]; } },
+                plotOptions: { pie: { donut: { size: '55%' } } },
+                noData: { text: 'No data' },
+                responsive: defaultResponsive
+            }).render();
+        } else {
+            document.querySelector("#chartStatusDistribution").innerHTML = '<div class="text-center text-muted py-5">No consignment data</div>';
+        }
+
+        // 3. Pickup Performance - Horizontal Bar
+        new ApexCharts(document.querySelector("#chartPickupPerformance"), {
+            chart: { type: 'bar', height: 200, toolbar: { show: false } },
+            series: [{ name: 'Count', data: [@Model.PickupsCompleted, @Model.PickupsFailed, @Model.PickupsPending, @Model.PickupsCancelled] }],
+            xaxis: { categories: ['Completed', 'Failed', 'Pending', 'Cancelled'] },
+            colors: ['#198754', '#dc3545', '#ffc107', '#6c757d'],
+            plotOptions: {
+                bar: { horizontal: true, distributed: true, barHeight: '60%', borderRadius: 4 }
+            },
+            legend: { show: false },
+            dataLabels: { enabled: true },
+            grid: { borderColor: '#f1f1f1' },
+            responsive: [{
+                breakpoint: 768,
+                options: { chart: { height: 180 } }
+            }, {
+                breakpoint: 480,
+                options: { chart: { height: 160 } }
+            }]
+        }).render();
+
+        // 4. Trip Overview - Horizontal Bar
+        new ApexCharts(document.querySelector("#chartTripOverview"), {
+            chart: { type: 'bar', height: 250, toolbar: { show: false } },
+            series: [{ name: 'Trips', data: [@Model.TripsScheduled, @Model.TripsInTransit, @Model.TripsCompleted, @Model.TripsCancelled] }],
+            xaxis: { categories: ['Scheduled', 'In Transit', 'Completed', 'Cancelled'] },
+            colors: ['#17a2b8', '#0d6efd', '#198754', '#6c757d'],
+            plotOptions: {
+                bar: { horizontal: true, distributed: true, barHeight: '60%', borderRadius: 4 }
+            },
+            legend: { show: false },
+            dataLabels: { enabled: true },
+            grid: { borderColor: '#f1f1f1' },
+            responsive: [{
+                breakpoint: 768,
+                options: { chart: { height: 200 } }
+            }, {
+                breakpoint: 480,
+                options: { chart: { height: 180 } }
+            }]
+        }).render();
+
+        // 5. Service Type Distribution - Donut Chart
+        if (serviceData.length > 0) {
+            new ApexCharts(document.querySelector("#chartServiceType"), {
+                chart: { type: 'donut', height: 250 },
+                series: serviceData.map(s => s.value),
+                labels: serviceData.map(s => s.label),
+                colors: serviceData.map(s => s.color),
+                legend: { position: 'bottom', fontSize: '12px' },
+                plotOptions: { pie: { donut: { size: '55%' } } },
+                dataLabels: { enabled: true, formatter: function(val, opts) { return opts.w.config.series[opts.seriesIndex]; } },
+                noData: { text: 'No data' },
+                responsive: defaultResponsive
+            }).render();
+        } else {
+            document.querySelector("#chartServiceType").innerHTML = '<div class="text-center text-muted py-5">No consignment data</div>';
+        }
+
+        // 6. Vehicle Status - Donut Chart
+        if (vehicleData.length > 0) {
+            new ApexCharts(document.querySelector("#chartVehicleStatus"), {
+                chart: { type: 'donut', height: 200 },
+                series: vehicleData.map(v => v.value),
+                labels: vehicleData.map(v => v.label),
+                colors: vehicleData.map(v => v.color),
+                legend: { show: false },
+                plotOptions: { pie: { donut: { size: '60%' } } },
+                dataLabels: { enabled: false },
+                noData: { text: 'No vehicles' },
+                responsive: [{
+                    breakpoint: 768,
+                    options: { chart: { height: 180 } }
+                }, {
+                    breakpoint: 480,
+                    options: { chart: { height: 150 } }
+                }]
+            }).render();
+        } else {
+            document.querySelector("#chartVehicleStatus").innerHTML = '<div class="text-center text-muted py-3">No vehicle data</div>';
+        }
+    </script>
+}

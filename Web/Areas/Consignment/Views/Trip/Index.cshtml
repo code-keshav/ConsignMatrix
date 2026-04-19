@@ -1,0 +1,149 @@
+@using Base.Enum.Consignment
+@using Web.Areas.Consignment.ViewModels.Trip
+@model Web.Areas.Consignment.ViewModels.Trip.TripFilterVm
+
+@{
+    ViewData["Title"] = "Trips";
+
+    string DirLink(TripDirection dir) =>
+        $"/Consignment/Trip/Index?direction={dir}" +
+        (Model.Status.HasValue ? $"&status={Model.Status}" : "") +
+        (Model.TripType.HasValue ? $"&tripType={Model.TripType}" : "") +
+        (string.IsNullOrWhiteSpace(Model.TripNumber) ? "" : $"&tripNumber={Model.TripNumber}") +
+        (Model.DateFrom.HasValue ? $"&dateFrom={Model.DateFrom:yyyy-MM-dd}" : "") +
+        (Model.DateTo.HasValue ? $"&dateTo={Model.DateTo:yyyy-MM-dd}" : "");
+
+    string DirBtn(TripDirection dir) =>
+        Model.Direction == dir ? "btn btn-primary btn-sm" : "btn btn-outline-primary btn-sm";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="fw-semibold mb-0">Trips</span>
+    <a href="/Consignment/BranchOperation/Index" class="btn btn-sm btn-outline-secondary">
+        <i class="fa fa-arrow-left"></i> Branch Operations
+    </a>
+</div>
+
+<div class="btn-group mb-3" role="group" aria-label="Direction">
+    <a href="@DirLink(TripDirection.Outgoing)" class="@DirBtn(TripDirection.Outgoing)">
+        <i class="fa fa-arrow-up-right-from-square"></i> Outgoing
+    </a>
+    <a href="@DirLink(TripDirection.Incoming)" class="@DirBtn(TripDirection.Incoming)">
+        <i class="fa fa-arrow-down-to-line"></i> Incoming
+    </a>
+    <a href="@DirLink(TripDirection.All)" class="@DirBtn(TripDirection.All)">
+        <i class="fa fa-list"></i> All
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form asp-area="Consignment" asp-controller="Trip" asp-action="Index" method="get">
+            <input type="hidden" name="direction" value="@Model.Direction"/>
+            <div class="filter-container">
+                <div class="filter-col">
+                    <label asp-for="TripNumber" class="form-label">Trip Number</label>
+                    <input asp-for="TripNumber" class="form-control" placeholder="TRP..."/>
+                </div>
+                <div class="filter-col">
+                    <label class="form-label">Status</label>
+                    <select asp-for="Status" class="form-control"
+                            asp-items="Html.GetEnumSelectList<TripStatus>()">
+                        <option value="">-- All --</option>
+                    </select>
+                </div>
+                <div class="filter-col">
+                    <label class="form-label">Trip Type</label>
+                    <select asp-for="TripType" class="form-control"
+                            asp-items="Html.GetEnumSelectList<TripType>()">
+                        <option value="">-- All --</option>
+                    </select>
+                </div>
+                <div class="filter-col">
+                    <label asp-for="DateFrom" class="form-label">Date From</label>
+                    <input asp-for="DateFrom" type="date" class="form-control"/>
+                </div>
+                <div class="filter-col">
+                    <label asp-for="DateTo" class="form-label">Date To</label>
+                    <input asp-for="DateTo" type="date" class="form-control"/>
+                </div>
+                <div class="filter-btn">
+                    <div class="d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                        <a asp-area="Consignment" asp-controller="Trip" asp-action="Index"
+                           asp-route-direction="@Model.Direction"
+                           class="btn btn-secondary btn-sm">
+                            <i class="fa fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table_bold table-bordered table-hover">
+        <thead class="table-light">
+        <tr>
+            <th>SN</th>
+            <th>Trip #</th>
+            <th>Type</th>
+            <th>From → To</th>
+            <th>Driver</th>
+            <th>Vehicle</th>
+            <th>Consignments</th>
+            <th>Weight (kg)</th>
+            <th>Status</th>
+            <th>Scheduled</th>
+            <th>Created</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Trips.Any())
+        {
+            var sn = 1;
+            foreach (var t in Model.Trips)
+            {
+                var statusBadge = t.TripStatus switch
+                {
+                    TripStatus.Scheduled => "badge bg-warning text-dark",
+                    TripStatus.InTransit => "badge bg-primary",
+                    TripStatus.Completed => "badge bg-success",
+                    TripStatus.Cancelled => "badge bg-secondary",
+                    _ => "badge bg-secondary"
+                };
+                <tr>
+                    <td>@sn</td>
+                    <td><strong>@t.TripNumber</strong></td>
+                    <td>@t.TripType</td>
+                    <td>@t.FromBranchName → @t.ToBranchName</td>
+                    <td>@t.DriverName</td>
+                    <td>@t.VehicleNumber</td>
+                    <td>@t.TotalConsignments</td>
+                    <td>@t.TotalWeight.ToString("F2")</td>
+                    <td><span class="@statusBadge">@t.TripStatus</span></td>
+                    <td>@(t.ScheduledDeparture?.ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                    <td>@t.RecDate.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <a asp-area="Consignment" asp-controller="Trip" asp-action="Detail"
+                           asp-route-id="@t.Id" class="btn btn-sm btn-outline-info">
+                            <i class="fa fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                sn++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="12" class="text-center text-muted py-4">No trips found.</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

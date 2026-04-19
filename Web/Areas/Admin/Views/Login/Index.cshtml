@@ -1,0 +1,79 @@
+﻿@{
+    Layout = "_EmptyLayout";
+}
+@model Web.Areas.Admin.Requests.LoginReq
+
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="container">
+        <div class="text-center mb-4">
+            @*<a href="." class="navbar-brand navbar-brand-autodark">
+                <img src="~/images/logo.jpg" height="36" alt="LOGO">
+            </a>*@
+        </div>
+        <div class="card shadow-lg border-0" style="max-width: 420px; margin: 0 auto;">
+            <div class="card-body p-4 p-md-5">
+                <h4 class="text-center mb-4">Login to your account</h4>
+                <form asp-action="Login" method="post" autocomplete="off" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input asp-for="Username" type="text" class="form-control" placeholder="Username" required/>
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="input-group input-group-flat">
+                            <input asp-for="Password" type="password" class="form-control" placeholder="Your password" autocomplete="off" required/>
+                            <span class="input-group-text">
+                                <a href="#" class="link-secondary toggle-password" title="Show password" data-bs-toggle="tooltip">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                            </span>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe"/>
+                            <label class="form-check-label" for="rememberMe">Remember me on this device</label>
+                        </div>
+                    </div>
+
+                    <div class="form-footer">
+                        <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+            toggle.addEventListener('click', e => {
+                e.preventDefault();
+                const input = toggle.closest('.input-group').querySelector('input');
+                const icon = toggle.querySelector('i');
+
+                const isPassword = input.type === 'password';
+                input.type = input.type === 'password' ? 'text' : 'password';
+                icon.classList.toggle('fa fa-eye');
+                icon.classList.toggle('fa fa-eye-slash');
+
+                toggle.title = input.type === 'password' ? 'Show password' : 'Hide password';
+                // Refresh Bootstrap tooltip if initialized
+                const tooltip = bootstrap.Tooltip.getInstance(toggle);
+                if (tooltip) {
+                    tooltip.dispose();
+                    new bootstrap.Tooltip(toggle);
+                }
+            });
+        });
+    });
+</script>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

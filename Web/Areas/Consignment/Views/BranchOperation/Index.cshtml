@@ -1,0 +1,967 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.BranchOperation.BranchOperationIndexVm
+
+@{
+    ViewData["Title"] = "Branch Operations";
+}
+
+<style>[v-cloak] { display: none !important; }</style>
+
+<div id="branch-ops-app" v-cloak>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="fw-semibold mb-0">Branch Operations</span>
+        <a href="/Consignment/Trip/Index" class="btn btn-sm btn-outline-secondary">
+            <i class="fa fa-truck"></i> View Trips
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-3">
+        <div class="col-6 col-md mb-2">
+            <div class="card text-center shadow-sm border-warning h-100">
+                <div class="card-body py-2">
+                    <h5 class="mb-0 text-warning">{{ summary.toReceive }}</h5>
+                    <small class="text-muted">To Receive</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md mb-2">
+            <div class="card text-center shadow-sm border-info h-100">
+                <div class="card-body py-2">
+                    <h5 class="mb-0 text-info">{{ summary.sorting }}</h5>
+                    <small class="text-muted">Sorting</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md mb-2">
+            <div class="card text-center shadow-sm border-primary h-100">
+                <div class="card-body py-2">
+                    <h5 class="mb-0 text-primary">{{ summary.bagging }}</h5>
+                    <small class="text-muted">Bagging</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md mb-2">
+            <div class="card text-center shadow-sm border-success h-100">
+                <div class="card-body py-2">
+                    <h5 class="mb-0 text-success">{{ summary.readyToDispatch }}</h5>
+                    <small class="text-muted">Ready to Dispatch</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md mb-2">
+            <div class="card text-center shadow-sm border-secondary h-100">
+                <div class="card-body py-2">
+                    <h5 class="mb-0 text-secondary">{{ summary.readyForDelivery }}</h5>
+                    <small class="text-muted">Ready for Delivery</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-0">
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'inward' }" href="#"
+               @@click.prevent="switchTab('inward')">
+                <i class="fa fa-arrow-down"></i> Inward
+                <span v-if="summary.toReceive > 0" class="badge bg-warning text-dark ms-1">{{ summary.toReceive }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'sorting' }" href="#"
+               @@click.prevent="switchTab('sorting')">
+                <i class="fa fa-sort"></i> Sorting
+                <span v-if="summary.sorting > 0" class="badge bg-info ms-1">{{ summary.sorting }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'bagging' }" href="#"
+               @@click.prevent="switchTab('bagging')">
+                <i class="fa fa-box"></i> Bagging
+                <span v-if="summary.bagging > 0" class="badge bg-primary ms-1">{{ summary.bagging }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'dispatch' }" href="#"
+               @@click.prevent="switchTab('dispatch')">
+                <i class="fa fa-truck"></i> Dispatch
+                <span v-if="summary.readyToDispatch > 0" class="badge bg-success ms-1">{{ summary.readyToDispatch }}</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" :class="{ active: activeTab === 'delivery' }" href="#"
+               @@click.prevent="switchTab('delivery')">
+                <i class="fa fa-house-chimney"></i> Ready for Delivery
+                <span v-if="summary.readyForDelivery > 0" class="badge bg-secondary ms-1">{{ summary.readyForDelivery }}</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- === INWARD TAB === -->
+    <div v-show="activeTab === 'inward'" class="card shadow-sm border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-3 align-items-end flex-wrap">
+                <div>
+                    <label class="form-label mb-1">Search by Tracking #</label>
+                    <input type="text" class="form-control form-control-sm" v-model="inwardSearch"
+                           placeholder="TRK..." @@input="loadInward" style="width:220px"/>
+                </div>
+                <button class="btn btn-sm btn-secondary" @@click="loadInward">
+                    <i class="fa fa-redo"></i> Refresh
+                </button>
+            </div>
+            <div v-if="selectedInward.length > 0"
+                 class="alert alert-warning d-flex align-items-center justify-content-between mb-3 py-2">
+                <span><strong>{{ selectedInward.length }}</strong> selected</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-warning" @@click="bulkReceive">
+                        <i class="fa fa-check-double"></i> Receive All Selected
+                    </button>
+                    <button class="btn btn-sm btn-secondary" @@click="selectedInward = []">Clear</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px">
+                                <input type="checkbox" @@change="toggleSelectAllInward"
+                                       :checked="inwardConsignments.length > 0 && selectedInward.length === inwardConsignments.length"/>
+                            </th>
+                            <th>Tracking #</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Destination</th>
+                            <th>Wt (kg)</th>
+                            <th>Pkgs</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loadingInward">
+                            <td colspan="10" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div> Loading...
+                            </td>
+                        </tr>
+                        <tr v-if="!loadingInward && inwardConsignments.length === 0">
+                            <td colspan="10" class="text-center py-4 text-muted">No consignments to receive.</td>
+                        </tr>
+                        <tr v-for="c in inwardConsignments" :key="c.id">
+                            <td><input type="checkbox" :value="c.id" v-model="selectedInward"/></td>
+                            <td><a :href="'/Consignment/Consignment/Detail/' + c.id">{{ c.trackingNumber }}</a></td>
+                            <td>{{ c.senderName }}</td>
+                            <td>{{ c.receiverName }}</td>
+                            <td>{{ c.destinationBranch }}</td>
+                            <td>{{ c.chargeableWeight }}</td>
+                            <td>{{ c.packageCount }}</td>
+                            <td>
+                                <span :class="c.currentStatusValue === 1 ? 'badge bg-secondary' : 'badge bg-success'">
+                                    {{ c.currentStatus }}
+                                </span>
+                            </td>
+                            <td>{{ c.recDate }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success" @@click="receiveOne(c.id)">
+                                    <i class="fa fa-check"></i> Receive
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- === SORTING TAB === -->
+    <div v-show="activeTab === 'sorting'" class="card shadow-sm border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-3 align-items-end flex-wrap">
+                <div>
+                    <label class="form-label mb-1">Search by Tracking #</label>
+                    <input type="text" class="form-control form-control-sm" v-model="sortingSearch"
+                           placeholder="TRK..." @@input="loadSorting" style="width:220px"/>
+                </div>
+                <button class="btn btn-sm btn-secondary" @@click="loadSorting">
+                    <i class="fa fa-redo"></i> Refresh
+                </button>
+            </div>
+            <div v-if="selectedSorting.length > 0"
+                 class="alert alert-info d-flex align-items-center justify-content-between mb-3 py-2">
+                <span><strong>{{ selectedSorting.length }}</strong> selected</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <select class="form-control form-control-sm select2" v-model="bulkSortDestination" style="width:200px">
+                        <option value="">-- Destination --</option>
+                        <option v-for="b in branches" :value="b.Id">{{ b.Name }} ({{ b.Code }})</option>
+                    </select>
+                    <button class="btn btn-sm btn-info" @@click="bulkSort" :disabled="!bulkSortDestination">
+                        <i class="fa fa-check-double"></i> Sort All Selected
+                    </button>
+                    <button class="btn btn-sm btn-secondary" @@click="selectedSorting = []">Clear</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px">
+                                <input type="checkbox" @@change="toggleSelectAllSorting"
+                                       :checked="sortingConsignments.length > 0 && selectedSorting.length === sortingConsignments.length"/>
+                            </th>
+                            <th>Tracking #</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Destination Branch</th>
+                            <th>Wt (kg)</th>
+                            <th>Pkgs</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loadingSorting">
+                            <td colspan="9" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div> Loading...
+                            </td>
+                        </tr>
+                        <tr v-if="!loadingSorting && sortingConsignments.length === 0">
+                            <td colspan="9" class="text-center py-4 text-muted">No consignments to sort.</td>
+                        </tr>
+                        <tr v-for="c in sortingConsignments" :key="c.id">
+                            <td><input type="checkbox" :value="c.id" v-model="selectedSorting"/></td>
+                            <td><a :href="'/Consignment/Consignment/Detail/' + c.id">{{ c.trackingNumber }}</a></td>
+                            <td>{{ c.senderName }}</td>
+                            <td>{{ c.receiverName }}</td>
+                            <td>
+                                <select class="form-control form-control-sm select2" v-model="sortDestinations[c.id]"
+                                        style="min-width:150px">
+                                    <option v-for="b in branches" :value="b.Id">{{ b.Name }}</option>
+                                </select>
+                            </td>
+                            <td>{{ c.chargeableWeight }}</td>
+                            <td>{{ c.packageCount }}</td>
+                            <td>{{ c.recDate }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-info"
+                                        @@click="sortOne(c.id, sortDestinations[c.id])">
+                                    <i class="fa fa-check"></i> Sort
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- === BAGGING TAB === -->
+    <div v-show="activeTab === 'bagging'" class="card shadow-sm border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-3 align-items-end flex-wrap">
+                <div>
+                    <label class="form-label mb-1">Search by Tracking #</label>
+                    <input type="text" class="form-control form-control-sm" v-model="baggingSearch"
+                           placeholder="TRK..." @@input="loadBagging" style="width:220px"/>
+                </div>
+                <div>
+                    <label class="form-label mb-1">Destination</label>
+                    <select class="form-control form-control-sm" v-model="baggingDestFilter"
+                            @@change="loadBagging" style="width:180px">
+                        <option value="">All</option>
+                        <option v-for="b in branches" :value="b.id">{{ b.name }}</option>
+                    </select>
+                </div>
+                <button class="btn btn-sm btn-secondary" @@click="loadBagging">
+                    <i class="fa fa-redo"></i> Refresh
+                </button>
+            </div>
+            <div v-if="selectedBagging.length > 0"
+                 class="alert alert-primary d-flex align-items-center justify-content-between mb-3 py-2">
+                <span><strong>{{ selectedBagging.length }}</strong> selected</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" @@click="bulkBag">
+                        <i class="fa fa-check-double"></i> Bag All Selected
+                    </button>
+                    <button class="btn btn-sm btn-secondary" @@click="selectedBagging = []">Clear</button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px">
+                                <input type="checkbox" @@change="toggleSelectAllBagging"
+                                       :checked="baggingConsignments.length > 0 && selectedBagging.length === baggingConsignments.length"/>
+                            </th>
+                            <th>Tracking #</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Destination</th>
+                            <th>Wt (kg)</th>
+                            <th>Pkgs</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loadingBagging">
+                            <td colspan="9" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div> Loading...
+                            </td>
+                        </tr>
+                        <tr v-if="!loadingBagging && baggingConsignments.length === 0">
+                            <td colspan="9" class="text-center py-4 text-muted">No consignments to bag.</td>
+                        </tr>
+                        <tr v-for="c in baggingConsignments" :key="c.id">
+                            <td><input type="checkbox" :value="c.id" v-model="selectedBagging"/></td>
+                            <td><a :href="'/Consignment/Consignment/Detail/' + c.id">{{ c.trackingNumber }}</a></td>
+                            <td>{{ c.senderName }}</td>
+                            <td>{{ c.receiverName }}</td>
+                            <td>{{ c.destinationBranch }}</td>
+                            <td>{{ c.chargeableWeight }}</td>
+                            <td>{{ c.packageCount }}</td>
+                            <td>{{ c.recDate }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" @@click="bagOne(c.id)">
+                                    <i class="fa fa-box"></i> Bag
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- === DISPATCH TAB === -->
+    <div v-show="activeTab === 'dispatch'" class="card shadow-sm border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-3 align-items-end justify-content-between flex-wrap">
+                <div class="d-flex gap-2 align-items-end">
+                    <div>
+                        <label class="form-label mb-1">Destination</label>
+                        <select class="form-control form-control-sm" v-model="dispatchDestFilter"
+                                @@change="loadDispatch" style="width:180px">
+                            <option value="">All</option>
+                            <option v-for="b in branches" :value="b.Id">{{ b.Name }}</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" @@click="loadDispatch">
+                        <i class="fa fa-redo"></i> Refresh
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-success" :disabled="selectedDispatch.length === 0"
+                        @@click="openDispatchModal">
+                    <i class="fa fa-truck"></i> Create Trip ({{ selectedDispatch.length }} selected)
+                </button>
+            </div>
+            <div v-if="selectedDispatch.length > 0" class="alert alert-success py-2 mb-3">
+                <strong>{{ selectedDispatch.length }}</strong> consignment(s) — Total:
+                <strong>{{ selectedDispatchWeight.toFixed(2) }} kg</strong>
+            </div>
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px">
+                                <input type="checkbox" @@change="toggleSelectAllDispatch"
+                                       :checked="dispatchConsignments.length > 0 && selectedDispatch.length === dispatchConsignments.length"/>
+                            </th>
+                            <th>Tracking #</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Destination</th>
+                            <th>Wt (kg)</th>
+                            <th>Pkgs</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loadingDispatch">
+                            <td colspan="8" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div> Loading...
+                            </td>
+                        </tr>
+                        <tr v-if="!loadingDispatch && dispatchConsignments.length === 0">
+                            <td colspan="8" class="text-center py-4 text-muted">No consignments ready to dispatch.</td>
+                        </tr>
+                        <tr v-for="c in dispatchConsignments" :key="c.id">
+                            <td><input type="checkbox" :value="c.id" v-model="selectedDispatch"/></td>
+                            <td><a :href="'/Consignment/Consignment/Detail/' + c.id">{{ c.trackingNumber }}</a></td>
+                            <td>{{ c.senderName }}</td>
+                            <td>{{ c.receiverName }}</td>
+                            <td>{{ c.destinationBranch }}</td>
+                            <td>{{ c.chargeableWeight }}</td>
+                            <td>{{ c.packageCount }}</td>
+                            <td>{{ c.recDate }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- === READY FOR DELIVERY TAB === -->
+    <div v-show="activeTab === 'delivery'" class="card shadow-sm border-top-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-3 align-items-end justify-content-between flex-wrap">
+                <div class="d-flex gap-2 align-items-end">
+                    <div>
+                        <label class="form-label mb-1">Search by Tracking #</label>
+                        <input type="text" class="form-control form-control-sm" v-model="deliverySearch"
+                               placeholder="TRK..." @@input="loadDelivery" style="width:220px"/>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" @@click="loadDelivery">
+                        <i class="fa fa-redo"></i> Refresh
+                    </button>
+                </div>
+                <button class="btn btn-sm btn-success" :disabled="selectedDelivery.length === 0"
+                        @@click="openDeliveryModal">
+                    <i class="fa fa-truck"></i> Create Delivery Trip ({{ selectedDelivery.length }} selected)
+                </button>
+            </div>
+            <div v-if="selectedDelivery.length > 0" class="alert alert-secondary py-2 mb-3">
+                <strong>{{ selectedDelivery.length }}</strong> consignment(s) — Total:
+                <strong>{{ selectedDeliveryWeight.toFixed(2) }} kg</strong>
+            </div>
+            <div class="table-responsive">
+                <table class="table table_bold table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:30px">
+                                <input type="checkbox" @@change="toggleSelectAllDelivery"
+                                       :checked="deliveryConsignments.length > 0 && selectedDelivery.length === deliveryConsignments.length"/>
+                            </th>
+                            <th>Tracking #</th>
+                            <th>Sender</th>
+                            <th>Receiver</th>
+                            <th>Destination</th>
+                            <th>Wt (kg)</th>
+                            <th>Pkgs</th>
+                            <th>Status</th>
+                            <th>Attempts</th>
+                            <th>Arrived</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-if="loadingDelivery">
+                            <td colspan="10" class="text-center py-4">
+                                <div class="spinner-border spinner-border-sm"></div> Loading...
+                            </td>
+                        </tr>
+                        <tr v-if="!loadingDelivery && deliveryConsignments.length === 0">
+                            <td colspan="10" class="text-center py-4 text-muted">No consignments ready for delivery.</td>
+                        </tr>
+                        <tr v-for="c in deliveryConsignments" :key="c.id">
+                            <td><input type="checkbox" :value="c.id" v-model="selectedDelivery"/></td>
+                            <td><a :href="'/Consignment/Consignment/Detail/' + c.id">{{ c.trackingNumber }}</a></td>
+                            <td>{{ c.senderName }}</td>
+                            <td>{{ c.receiverName }}</td>
+                            <td>{{ c.destinationBranch }}</td>
+                            <td>{{ c.chargeableWeight }}</td>
+                            <td>{{ c.packageCount }}</td>
+                            <td>
+                                <span :class="c.currentStatus === 'DeliveryAttempted' ? 'badge bg-danger' : 'badge bg-success'">
+                                    {{ c.currentStatus === 'DeliveryAttempted' ? 'Retry' : 'Ready' }}
+                                </span>
+                            </td>
+                            <td>{{ c.attempts }}</td>
+                            <td>{{ c.recDate }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DELIVERY (CREATE DELIVERY TRIP) MODAL ===== -->
+    <div class="modal fade" id="deliveryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-house-chimney"></i> Create Delivery Trip</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-light border mb-3 p-2">
+                        <strong>{{ selectedDelivery.length }}</strong> consignment(s) selected —
+                        Total weight: <strong>{{ selectedDeliveryWeight.toFixed(2) }} kg</strong>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label required">Driver</label>
+                            <select class="form-control" v-model.number="deliveryForm.driverId">
+                                <option value="">-- Select Driver --</option>
+                                <option v-for="d in drivers" :value="d.id">{{ d.name }} ({{ d.employeeCode }})</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Vehicle</label>
+                            <select class="form-control" v-model.number="deliveryForm.vehicleId">
+                                <option value="">-- Select Vehicle --</option>
+                                <option v-for="v in vehicles" :value="v.id">{{ v.vehicleNumber }} ({{ v.vehicleType }})</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Scheduled Departure</label>
+                            <input type="datetime-local" class="form-control" v-model="deliveryForm.scheduledDeparture"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" v-model="deliveryForm.notes" placeholder="Optional"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" @@click="createDeliveryTrip"
+                            :disabled="submittingDelivery || !deliveryForm.driverId || !deliveryForm.vehicleId">
+                        <span v-if="submittingDelivery" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="fa fa-truck me-1"></i>
+                        Create Delivery Trip
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DISPATCH (CREATE TRIP) MODAL — inside Vue scope ===== -->
+    <div class="modal fade" id="dispatchModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fa fa-truck"></i> Create Trip / Dispatch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-light border mb-3 p-2">
+                        <strong>{{ selectedDispatch.length }}</strong> consignment(s) selected —
+                        Total weight: <strong>{{ selectedDispatchWeight.toFixed(2) }} kg</strong>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label required">Trip Type</label>
+                            <select class="form-control" v-model.number="tripForm.tripType">
+                                <option value="1">Line Haul</option>
+                                <option value="2">Transfer</option>
+                                <option value="3">Delivery</option>
+                                <option value="4">Pickup</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Destination Branch</label>
+                            <select class="form-control" v-model.number="tripForm.toBranchId">
+                                <option value="">-- Select --</option>
+                                <option v-for="b in branches" :value="b.Id">{{ b.Name }} ({{ b.Code }})</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Driver</label>
+                            <select class="form-control" v-model.number="tripForm.driverId">
+                                <option value="">-- Select Driver --</option>
+                                <option v-for="d in drivers" :value="d.id">{{ d.name }} ({{ d.employeeCode }})</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Vehicle</label>
+                            <select class="form-control" v-model.number="tripForm.vehicleId">
+                                <option value="">-- Select Vehicle --</option>
+                                <option v-for="v in vehicles" :value="v.id">{{ v.vehicleNumber }} ({{ v.vehicleType }})</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Scheduled Departure</label>
+                            <input type="datetime-local" class="form-control" v-model="tripForm.scheduledDeparture"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Notes</label>
+                            <input type="text" class="form-control" v-model="tripForm.notes" placeholder="Optional"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" @@click="createTrip"
+                            :disabled="submittingTrip || !tripForm.toBranchId || !tripForm.driverId || !tripForm.vehicleId">
+                        <span v-if="submittingTrip" class="spinner-border spinner-border-sm me-1"></span>
+                        <i v-else class="fa fa-truck me-1"></i>
+                        Dispatch / Create Trip
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+<script src="~/dist/js/vue-global-3.4.27.js"></script>
+<script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    const serverBranches = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Branches));
+
+    createApp({
+        setup() {
+            const activeTab = ref('inward');
+            const tabLoaded = ref({ inward: false, sorting: false, bagging: false, dispatch: false, delivery: false });
+
+            const summary = ref({ toReceive: 0, sorting: 0, bagging: 0, readyToDispatch: 0, readyForDelivery: 0 });
+
+            const branches = ref(serverBranches);
+
+            // Inward
+            const inwardConsignments = ref([]);
+            const loadingInward = ref(false);
+            const inwardSearch = ref('');
+            const selectedInward = ref([]);
+
+            // Sorting
+            const sortingConsignments = ref([]);
+            const loadingSorting = ref(false);
+            const sortingSearch = ref('');
+            const selectedSorting = ref([]);
+            const bulkSortDestination = ref('');
+            const sortDestinations = ref({});
+
+            // Bagging
+            const baggingConsignments = ref([]);
+            const loadingBagging = ref(false);
+            const baggingSearch = ref('');
+            const baggingDestFilter = ref('');
+            const selectedBagging = ref([]);
+
+            // Dispatch
+            const dispatchConsignments = ref([]);
+            const loadingDispatch = ref(false);
+            const dispatchDestFilter = ref('');
+            const selectedDispatch = ref([]);
+
+            // Delivery
+            const deliveryConsignments = ref([]);
+            const loadingDelivery = ref(false);
+            const deliverySearch = ref('');
+            const selectedDelivery = ref([]);
+            const deliveryForm = ref({ driverId: '', vehicleId: '', scheduledDeparture: '', notes: '' });
+            const submittingDelivery = ref(false);
+
+            // Trip form (inside modal)
+            const tripForm = ref({ tripType: 1, toBranchId: '', driverId: '', vehicleId: '', scheduledDeparture: '', notes: '' });
+            const drivers = ref([]);
+            const vehicles = ref([]);
+            const submittingTrip = ref(false);
+
+            const selectedDispatchWeight = computed(() =>
+                dispatchConsignments.value
+                    .filter(c => selectedDispatch.value.includes(c.id))
+                    .reduce((sum, c) => sum + (c.chargeableWeight || 0), 0)
+            );
+
+            const selectedDeliveryWeight = computed(() =>
+                deliveryConsignments.value
+                    .filter(c => selectedDelivery.value.includes(c.id))
+                    .reduce((sum, c) => sum + (c.chargeableWeight || 0), 0)
+            );
+
+            async function loadSummary() {
+                try {
+                    const res = await fetch('/Consignment/BranchOperation/GetSummary');
+                    const data = await res.json();
+                    if (data.success) summary.value = data;
+                } catch {}
+            }
+
+            async function loadInward() {
+                loadingInward.value = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (inwardSearch.value) params.append('trackingNum', inwardSearch.value);
+                    const res = await fetch('/Consignment/BranchOperation/GetInwardConsignments?' + params);
+                    const data = await res.json();
+                    if (data.success) inwardConsignments.value = data.consignments;
+                    else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+                finally { loadingInward.value = false; }
+            }
+
+            async function loadSorting() {
+                loadingSorting.value = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (sortingSearch.value) params.append('trackingNum', sortingSearch.value);
+                    const res = await fetch('/Consignment/BranchOperation/GetSortingConsignments?' + params);
+                    const data = await res.json();
+                    if (data.success) {
+                        sortingConsignments.value = data.consignments;
+                        data.consignments.forEach(c => {
+                            if (!sortDestinations.value[c.id]) sortDestinations.value[c.id] = c.destinationBranchId;
+                        });
+                    } else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+                finally { loadingSorting.value = false; }
+            }
+
+            async function loadBagging() {
+                loadingBagging.value = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (baggingSearch.value) params.append('trackingNum', baggingSearch.value);
+                    if (baggingDestFilter.value) params.append('destinationBranchId', baggingDestFilter.value);
+                    const res = await fetch('/Consignment/BranchOperation/GetBaggingConsignments?' + params);
+                    const data = await res.json();
+                    if (data.success) baggingConsignments.value = data.consignments;
+                    else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+                finally { loadingBagging.value = false; }
+            }
+
+            async function loadDispatch() {
+                loadingDispatch.value = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (dispatchDestFilter.value) params.append('destinationBranchId', dispatchDestFilter.value);
+                    const res = await fetch('/Consignment/BranchOperation/GetDispatchConsignments?' + params);
+                    const data = await res.json();
+                    if (data.success) dispatchConsignments.value = data.consignments;
+                    else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+                finally { loadingDispatch.value = false; }
+            }
+
+            async function loadDelivery() {
+                loadingDelivery.value = true;
+                try {
+                    const params = new URLSearchParams();
+                    if (deliverySearch.value) params.append('trackingNum', deliverySearch.value);
+                    const res = await fetch('/Consignment/BranchOperation/GetReadyForDeliveryConsignments?' + params);
+                    const data = await res.json();
+                    if (data.success) deliveryConsignments.value = data.consignments;
+                    else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+                finally { loadingDelivery.value = false; }
+            }
+
+            async function loadDriversAndVehicles() {
+                try {
+                    const [dRes, vRes] = await Promise.all([
+                        fetch('/Consignment/BranchOperation/GetAvailableDrivers'),
+                        fetch('/Consignment/BranchOperation/GetAvailableVehicles'),
+                    ]);
+                    drivers.value = await dRes.json();
+                    vehicles.value = await vRes.json();
+                } catch {}
+            }
+
+            function switchTab(tab) {
+                activeTab.value = tab;
+                if (!tabLoaded.value[tab]) {
+                    tabLoaded.value[tab] = true;
+                    if (tab === 'inward') loadInward();
+                    else if (tab === 'sorting') loadSorting();
+                    else if (tab === 'bagging') loadBagging();
+                    else if (tab === 'dispatch') { loadDispatch(); loadDriversAndVehicles(); }
+                    else if (tab === 'delivery') { loadDelivery(); loadDriversAndVehicles(); }
+                }
+            }
+
+            function toggleSelectAllInward(e) { selectedInward.value = e.target.checked ? inwardConsignments.value.map(c => c.id) : []; }
+            function toggleSelectAllSorting(e) { selectedSorting.value = e.target.checked ? sortingConsignments.value.map(c => c.id) : []; }
+            function toggleSelectAllBagging(e) { selectedBagging.value = e.target.checked ? baggingConsignments.value.map(c => c.id) : []; }
+            function toggleSelectAllDispatch(e) { selectedDispatch.value = e.target.checked ? dispatchConsignments.value.map(c => c.id) : []; }
+            function toggleSelectAllDelivery(e) { selectedDelivery.value = e.target.checked ? deliveryConsignments.value.map(c => c.id) : []; }
+
+            async function receiveOne(id) {
+                notify.confirm('Confirm receipt at origin branch?', async () => {
+                    try {
+                        const res = await fetch('/Consignment/BranchOperation/ReceiveConsignment', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ consignmentId: id }),
+                        });
+                        const data = await res.json();
+                        if (data.success) { notify.success(data.message); await loadInward(); await loadSummary(); }
+                        else notify.error(data.message);
+                    } catch (e) { notify.error(e.message); }
+                });
+            }
+
+            async function bulkReceive() {
+                notify.confirm(`Receive ${selectedInward.value.length} consignment(s)?`, async () => {
+                    try {
+                        const res = await fetch('/Consignment/BranchOperation/BulkReceive', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ consignmentIds: selectedInward.value }),
+                        });
+                        const data = await res.json();
+                        if (data.success) { notify.success(data.message); selectedInward.value = []; await loadInward(); await loadSummary(); }
+                        else notify.error(data.message);
+                    } catch (e) { notify.error(e.message); }
+                });
+            }
+
+            async function sortOne(id, destBranchId) {
+                if (!destBranchId) { notify.error('Please select a destination branch.'); return; }
+                try {
+                    const res = await fetch('/Consignment/BranchOperation/SortConsignment', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ consignmentId: id, destinationBranchId: destBranchId }),
+                    });
+                    const data = await res.json();
+                    if (data.success) { notify.success(data.message); await loadSorting(); await loadSummary(); }
+                    else notify.error(data.message);
+                } catch (e) { notify.error(e.message); }
+            }
+
+            async function bulkSort() {
+                if (!bulkSortDestination.value) { notify.error('Please select a destination branch.'); return; }
+                notify.confirm(`Sort ${selectedSorting.value.length} consignment(s)?`, async () => {
+                    try {
+                        const items = selectedSorting.value.map(id => ({
+                            consignmentId: id, destinationBranchId: parseInt(bulkSortDestination.value),
+                        }));
+                        const res = await fetch('/Consignment/BranchOperation/BulkSort', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ items }),
+                        });
+                        const data = await res.json();
+                        if (data.success) { notify.success(data.message); selectedSorting.value = []; bulkSortDestination.value = ''; await loadSorting(); await loadSummary(); }
+                        else notify.error(data.message);
+                    } catch (e) { notify.error(e.message); }
+                });
+            }
+
+            async function bagOne(id) {
+                notify.confirm('Bag this consignment for dispatch?', async () => {
+                    try {
+                        const res = await fetch('/Consignment/BranchOperation/BagConsignment', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ consignmentId: id }),
+                        });
+                        const data = await res.json();
+                        if (data.success) { notify.success(data.message); await loadBagging(); await loadSummary(); }
+                        else notify.error(data.message);
+                    } catch (e) { notify.error(e.message); }
+                });
+            }
+
+            async function bulkBag() {
+                notify.confirm(`Bag ${selectedBagging.value.length} consignment(s)?`, async () => {
+                    try {
+                        const res = await fetch('/Consignment/BranchOperation/BulkBag', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ consignmentIds: selectedBagging.value }),
+                        });
+                        const data = await res.json();
+                        if (data.success) { notify.success(data.message); selectedBagging.value = []; await loadBagging(); await loadSummary(); }
+                        else notify.error(data.message);
+                    } catch (e) { notify.error(e.message); }
+                });
+            }
+
+            function openDispatchModal() {
+                if (selectedDispatch.value.length === 0) { notify.error('Select at least one consignment.'); return; }
+                // Pre-fill destination if uniform
+                const selected = dispatchConsignments.value.filter(c => selectedDispatch.value.includes(c.id));
+                const uniqueDests = [...new Set(selected.map(c => c.destinationBranchId))];
+                if (uniqueDests.length === 1) tripForm.value.toBranchId = uniqueDests[0];
+                new bootstrap.Modal(document.getElementById('dispatchModal')).show();
+            }
+
+            async function createTrip() {
+                if (!tripForm.value.toBranchId || !tripForm.value.driverId || !tripForm.value.vehicleId) {
+                    notify.error('Please fill in destination branch, driver, and vehicle.');
+                    return;
+                }
+                submittingTrip.value = true;
+                try {
+                    const res = await fetch('/Consignment/Trip/Create', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            tripType: tripForm.value.tripType,
+                            toBranchId: tripForm.value.toBranchId,
+                            driverId: tripForm.value.driverId,
+                            vehicleId: tripForm.value.vehicleId,
+                            scheduledDeparture: tripForm.value.scheduledDeparture || null,
+                            notes: tripForm.value.notes || null,
+                            consignmentIds: selectedDispatch.value,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('dispatchModal')).hide();
+                        notify.success(data.message);
+                        setTimeout(() => { window.location.href = '/Consignment/Trip/Detail/' + data.tripId; }, 1500);
+                    } else {
+                        notify.error(data.message);
+                    }
+                } catch (e) { notify.error(e.message); }
+                finally { submittingTrip.value = false; }
+            }
+
+            function openDeliveryModal() {
+                if (selectedDelivery.value.length === 0) { notify.error('Select at least one consignment.'); return; }
+                deliveryForm.value = { driverId: '', vehicleId: '', scheduledDeparture: '', notes: '' };
+                new bootstrap.Modal(document.getElementById('deliveryModal')).show();
+            }
+
+            async function createDeliveryTrip() {
+                if (!deliveryForm.value.driverId || !deliveryForm.value.vehicleId) {
+                    notify.error('Please select a driver and vehicle.');
+                    return;
+                }
+                submittingDelivery.value = true;
+                try {
+                    const res = await fetch('/Consignment/Trip/Create', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            tripType: 3, // Delivery
+                            toBranchId: 0, // Server fills with current branch
+                            driverId: deliveryForm.value.driverId,
+                            vehicleId: deliveryForm.value.vehicleId,
+                            scheduledDeparture: deliveryForm.value.scheduledDeparture || null,
+                            notes: deliveryForm.value.notes || null,
+                            consignmentIds: selectedDelivery.value,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('deliveryModal')).hide();
+                        notify.success(data.message);
+                        setTimeout(() => { window.location.href = '/Consignment/Trip/Detail/' + data.tripId; }, 1500);
+                    } else {
+                        notify.error(data.message);
+                    }
+                } catch (e) { notify.error(e.message); }
+                finally { submittingDelivery.value = false; }
+            }
+
+            onMounted(async () => {
+                await loadSummary();
+                tabLoaded.value.inward = true;
+                await loadInward();
+            });
+
+            return {
+                activeTab, summary, branches,
+                inwardConsignments, loadingInward, inwardSearch, selectedInward,
+                sortingConsignments, loadingSorting, sortingSearch, selectedSorting,
+                bulkSortDestination, sortDestinations,
+                baggingConsignments, loadingBagging, baggingSearch, baggingDestFilter, selectedBagging,
+                dispatchConsignments, loadingDispatch, dispatchDestFilter, selectedDispatch,
+                selectedDispatchWeight, drivers, vehicles, tripForm, submittingTrip,
+                deliveryConsignments, loadingDelivery, deliverySearch, selectedDelivery,
+                selectedDeliveryWeight, deliveryForm, submittingDelivery,
+                switchTab,
+                toggleSelectAllInward, toggleSelectAllSorting, toggleSelectAllBagging, toggleSelectAllDispatch, toggleSelectAllDelivery,
+                receiveOne, bulkReceive, sortOne, bulkSort, bagOne, bulkBag,
+                openDispatchModal, createTrip,
+                openDeliveryModal, createDeliveryTrip,
+                loadInward, loadSorting, loadBagging, loadDispatch, loadDelivery,
+            };
+        }
+    }).mount('#branch-ops-app');
+</script>
+}

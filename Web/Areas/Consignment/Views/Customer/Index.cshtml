@@ -1,0 +1,106 @@
+﻿@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.CustomerFilterVm
+
+@{
+    ViewBag.Title = "Customers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="fw-semibold mb-0">Customers</span>
+    <a asp-area="Consignment" asp-controller="Customer" asp-action="Create" class="btn btn-primary btn-sm">
+        <i class="fa fa-plus"></i> Add Customer
+    </a>
+</div>
+
+<div class="card mb-3">
+    
+    <div class="card-body">
+        <form asp-area="Consignment" asp-controller="Customer" asp-action="Index" method="get">
+            <div class="filter-container">
+                <div class="filter-col">
+                    <label asp-for="SearchTerm" class="form-label">Search</label>
+                    <input asp-for="SearchTerm" class="form-control" placeholder="Name, Email, or Contact"/>
+                </div>
+                <div class="filter-col">
+                    <label class="form-label">Customer Type</label>
+                    <select asp-for="CustomerType" class="form-control"
+                            asp-items="Html.GetEnumSelectList<CustomerType>()">
+                        <option value="">-- Select Customer Type --</option>
+                    </select>
+                </div>
+
+                <div class="filter-btn">
+                    <div class="d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm me-2">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                        <a asp-area="Consignment" asp-controller="Customer" asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fa fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table_bold table-bordered table-hover">
+        <thead class="table-light">
+        <tr>
+            <th>SN</th>
+            <th>Name</th>
+            <th>Contact No</th>
+            <th>Secondary Phone No</th>
+            <th>Email</th>
+            <th>Customer Type</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Customers.Any())
+        {
+            var serialNumber = (Model.CurrentPage - 1) * Model.PageSize;
+            foreach (var item in Model.Customers)
+            {
+                serialNumber++;
+                <tr>
+                    <td>@serialNumber</td>
+                    <td>@item.Name</td>
+                    <td>@item.PhoneNo</td>
+                    <td>@item.SecondaryPhoneNo</td>
+                    <td>@item.Email</td>
+                    <td>@item.CustomerType.ToString()</td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="text-secondary text-decoration-none" asp-action="Detail" asp-route-id="@item.Id">Detail</a>
+                        |
+                        <a class="text-primary text-decoration-none" asp-action="Update" asp-route-id="@item.Id">Edit</a>
+                        |
+                        @if (!item.IsActive)
+                        {
+                            <a class="text-success text-decoration-none" asp-action="Activate" asp-route-id="@item.Id">Activate</a>
+                        }
+                        else
+                        {
+                            <a class="text-warning text-decoration-none" asp-action="Deactivate" asp-route-id="@item.Id">Deactivate</a>
+                        }
+                        |
+                        <a class="text-danger text-decoration-none" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

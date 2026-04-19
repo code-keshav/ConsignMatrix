@@ -1,0 +1,76 @@
+@model Web.Areas.Admin.ViewModels.DriverEditVm
+
+@{
+    ViewData["Title"] = "Update Driver";
+    Layout = "_Layout";
+}
+
+<div>
+    <form method="post" asp-action="Update" asp-controller="Driver" asp-area="Admin">
+        <div class="card col-10">
+            <h3 class="card-header">Update Driver</h3>
+            <div class="card-body">
+                <div class="field" hidden>
+                    <input type="hidden" asp-for="Id"/>
+                    <input type="hidden" asp-for="EmployeeId"/>
+                </div>
+
+                <!-- Read-only Employee Info -->
+                <div class="card border-secondary mb-3">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Employee Information</h6>
+                        <a class="btn btn-sm btn-light" asp-area="Admin" asp-controller="Employee" asp-action="Update" asp-route-id="@Model.EmployeeId">
+                            <i class="fa fa-external-link-alt"></i> View Employee
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <label class="form-label text-muted">Employee Code</label>
+                                <p class="fw-bold">@Model.EmployeeCode</p>
+                            </div>
+                            <div class="col-3">
+                                <label class="form-label text-muted">Name</label>
+                                <p class="fw-bold">@Model.EmployeeName</p>
+                            </div>
+                            <div class="col-3">
+                                <label class="form-label text-muted">Branch</label>
+                                <p class="fw-bold">@Model.BranchName</p>
+                            </div>
+                            <div class="col-3">
+                                <label class="form-label text-muted">Phone</label>
+                                <p class="fw-bold">@Model.Phone</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable Driver Fields -->
+                <div class="row">
+                    <div class="col-6">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="LicenseNumber"></label>
+                                <input type="text" asp-for="LicenseNumber" class="form-control" required/>
+                                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required" asp-for="LicenseExpiry"></label>
+                                <input type="date" asp-for="LicenseExpiry" class="form-control" required/>
+                                <span asp-validation-for="LicenseExpiry" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+            </div>
+        </div>
+    </form>
+</div>

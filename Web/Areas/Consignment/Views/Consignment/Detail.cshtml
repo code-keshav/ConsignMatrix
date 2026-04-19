@@ -1,0 +1,239 @@
+@using Base.Enum.Consignment
+@model Web.Areas.Consignment.ViewModels.Consignment.ConsignmentDetailVm
+
+@{
+    ViewData["Title"] = "Consignment Detail";
+}
+
+<div class="container">
+
+    <!-- Consignment Info -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Consignment: @Model.TrackingNumber</h4>
+            <div>
+                @if (Model.LatestStatus != null)
+                {
+                    <span class="badge bg-info fs-6">@Model.LatestStatus</span>
+                }
+                <a href="/Consignment/PickupTask/Create?consignmentId=@Model.Id" class="btn btn-sm btn-success ms-2">
+                    <i class="fa fa-truck"></i> Schedule Pickup
+                </a>
+                <a asp-action="Update" asp-route-id="@Model.Id" class="btn btn-sm btn-primary ms-2">
+                    <i class="fa fa-edit"></i> Edit
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Sender</label>
+                    <p>@Model.SenderName</p>
+                    <p class="text-muted small">@Model.SenderPhone</p>
+                    <p class="text-muted small">@Model.SenderAddress</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Receiver</label>
+                    <p>@Model.ReceiverName</p>
+                    <p class="text-muted small">@Model.ReceiverPhone</p>
+                    <p class="text-muted small">@Model.ReceiverAddress</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Origin Branch</label>
+                    <p>@Model.OriginBranchName</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Destination Branch</label>
+                    <p>@Model.DestinationBranchName</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Service Type</label>
+                    <p>@Model.ServiceType</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Payment Mode</label>
+                    <p>@Model.PaymentMode</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Declared Value</label>
+                    <p>@(Model.DeclaredValue?.ToString("F2") ?? "-")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">COD Amount</label>
+                    <p>@(Model.CodAmount?.ToString("F2") ?? "-")</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Total Weight</label>
+                    <p>@Model.TotalWeight.ToString("F2") kg</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Volumetric Weight</label>
+                    <p>@Model.VolumetricWeight.ToString("F2") kg</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Chargeable Weight</label>
+                    <p class="fw-bold text-primary">@Model.ChargeableWeight.ToString("F2") kg</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Total Volume</label>
+                    <p>@Model.TotalVolume.ToString("F2") cm&sup3;</p>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-w-3">
+                    <label class="fw-bold">Package Count</label>
+                    <p>@Model.PackageCount</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Booked On</label>
+                    <p>@Model.RecDate.ToString("yyyy-MM-dd HH:mm")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Expected Delivery</label>
+                    <p>@(Model.ExpectedDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")</p>
+                </div>
+                <div class="col-w-3">
+                    <label class="fw-bold">Actual Delivery</label>
+                    <p>@(Model.ActualDeliveryDate?.ToString("yyyy-MM-dd") ?? "-")</p>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.SpecialInstructions))
+            {
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="fw-bold">Special Instructions</label>
+                        <p>@Model.SpecialInstructions</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Packages -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Packages</h5>
+            <a class="btn btn-primary btn-sm" asp-area="Consignment" asp-controller="Package" asp-action="AddPackage" asp-route-id="@Model.Id">
+                <i class="fa fa-plus"></i> Add Package
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model.Packages.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Barcode</th>
+                            <th>Type</th>
+                            <th>Weight (kg)</th>
+                            <th>Dimensions (cm)</th>
+                            <th>Volume</th>
+                            <th>Vol. Weight</th>
+                            <th>Flags</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var pkg in Model.Packages)
+                        {
+                            <tr>
+                                <td>@pkg.PackageNumber</td>
+                                <td><code>@pkg.Barcode</code></td>
+                                <td>@pkg.PackageType</td>
+                                <td>@pkg.Weight.ToString("F2")</td>
+                                <td>@pkg.Length x @pkg.Width x @pkg.Height</td>
+                                <td>@pkg.Volume.ToString("F2")</td>
+                                <td>@pkg.VolumetricWeight.ToString("F2")</td>
+                                <td>
+                                    @if (pkg.IsFragile)
+                                    {
+                                        <span class="badge bg-warning">Fragile</span>
+                                    }
+                                    @if (pkg.IsHazardous)
+                                    {
+                                        <span class="badge bg-danger">Hazardous</span>
+                                    }
+                                    @if (pkg.RequiresColdChain)
+                                    {
+                                        <span class="badge bg-info">Cold Chain</span>
+                                    }
+                                    @if (!pkg.CanBeStacked)
+                                    {
+                                        <span class="badge bg-secondary">No Stack</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a class="text-primary text-decoration-none" asp-controller="Package" asp-action="Update"
+                                       asp-route-id="@pkg.Id" asp-route-consignmentId="@Model.Id">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                    |
+                                    <a class="text-danger text-decoration-none" asp-controller="Package" asp-action="Delete"
+                                       asp-route-id="@pkg.Id" asp-route-consignmentId="@Model.Id">
+                                        <i class="fa fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No packages added yet.</p>
+            }
+        </div>
+    </div>
+
+    <!-- Status Timeline -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-header">
+            <h5 class="mb-0">Status History</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.StatusLogs.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                            <th>By</th>
+                            <th>Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var log in Model.StatusLogs)
+                        {
+                            <tr>
+                                <td><span class="badge bg-info">@log.StatusType</span></td>
+                                <td>@log.Remarks</td>
+                                <td>@log.RecByName</td>
+                                <td>@log.RecDate.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No status logs available.</p>
+            }
+        </div>
+    </div>
+
+</div>

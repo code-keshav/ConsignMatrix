@@ -1,0 +1,46 @@
+@model Web.Areas.Admin.ViewModels.BranchPinCodeVm
+
+@{
+    ViewData["Title"] = "New Pin Code";
+    Layout = "_Layout";
+}
+
+<form method="post" asp-action="Create" asp-controller="BranchPinCode" asp-area="Admin">
+    <div class="card col-6">
+        <h3 class="card-header card-title">New Pin Code</h3>
+        <div class="card-body">
+            <div class="d-flex flex-column gap-2">
+                <div class="field">
+                    <div class="form-group">
+                        <label class="form-label required">Branch</label>
+                        <select asp-for="BranchId" class="form-select" required>
+                            <option value="">-- Select Branch --</option>
+                            @foreach (var branch in (dynamic)ViewBag.Branches)
+                            {
+                                <option value="@branch.Id">@branch.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="form-group">
+                        <label class="form-label required" asp-for="PinCode"></label>
+                        <input type="text" asp-for="PinCode" class="form-control" required/>
+                        <span asp-validation-for="PinCode" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="form-group form-check">
+                        <input type="checkbox" asp-for="IsActive" class="form-check-input"/>
+                        <label class="form-check-label" asp-for="IsActive">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Report" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+</form>

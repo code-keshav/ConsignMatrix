@@ -1,0 +1,108 @@
+@model Web.Areas.Admin.ViewModels.VehicleAssignmentEditVm
+
+@{
+    ViewData["Title"] = "Update Vehicle Assignments";
+    Layout = "_Layout";
+}
+
+<div class="">
+    <form method="post" asp-action="Update" asp-controller="VehicleAssignment" asp-area="Admin">
+        <input type="hidden" name="VehicleId" value="@Model.VehicleId"/>
+        <div class="card col-12">
+            <h3 class="card-header">
+                Vehicle Assignments - @Model.VehicleNumber
+            </h3>
+            <div class="card-body">
+                <div class="d-flex justify-content-end mb-3">
+                    <a asp-action="Create" asp-route-vehicleId="@Model.VehicleId" class="btn btn-sm btn-success">
+                        <i class="fa fa-plus"></i> Add New Assignment
+                    </a>
+                </div>
+
+                @if (!Model.Rows.Any())
+                {
+                    <div class="text-muted text-center py-3">
+                        No assignments for this vehicle.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Employee</th>
+                                <th>Assignment Type</th>
+                                <th>Assigned From</th>
+                                <th>Assigned To</th>
+                                <th>Active</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @for (var i = 0; i < Model.Rows.Count; i++)
+                            {
+                                var row = Model.Rows[i];
+                                <tr class="@(!row.IsActive ? "table-secondary" : "")">
+                                    <td>
+                                        <input type="hidden" name="Rows[@i].Id" value="@row.Id"/>
+                                        <input type="hidden" name="Rows[@i].EmployeeId" value="@row.EmployeeId"/>
+                                        <strong>@row.EmployeeName</strong>
+                                        <br/>
+                                        <small class="text-muted">@row.EmployeeCode</small>
+                                    </td>
+                                    <td>
+                                        <select name="Rows[@i].AssignmentType" class="form-control">
+                                            <option value="1" selected="@(row.AssignmentType == Base.Enum.VehicleAssignmentType.Driver)">Driver</option>
+                                            <option value="2" selected="@(row.AssignmentType == Base.Enum.VehicleAssignmentType.SupportingWorker)">Supporting Worker</option>
+                                            <option value="3" selected="@(row.AssignmentType == Base.Enum.VehicleAssignmentType.Helper)">Helper</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="date" name="Rows[@i].AssignedFrom" class="form-control" value="@row.AssignedFrom.ToString("yyyy-MM-dd")"/>
+                                    </td>
+                                    <td>
+                                        <input type="date" name="Rows[@i].AssignedTo" class="form-control" value="@(row.AssignedTo?.ToString("yyyy-MM-dd") ?? "")"/>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input type="hidden" name="Rows[@i].IsActive" value="false"/>
+                                            <input type="checkbox" name="Rows[@i].IsActive" value="true" class="form-check-input" @(row.IsActive ? "checked" : "")/>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (row.IsActive)
+                                        {
+                                            <a class="btn btn-sm btn-warning req-confirm" asp-action="Deactivate" asp-route-id="@row.Id"
+                                               title="Deactivate">
+                                                <i class="fa fa-power-off"></i>
+                                            </a>
+                                        }
+                                        <a class="btn btn-sm btn-danger req-confirm" asp-action="Remove" asp-route-id="@row.Id"
+                                           title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+            @if (Model.Rows.Any())
+            {
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a asp-action="Index" class="btn btn-ghost-muted">Back to List</a>
+                </div>
+            }
+            else
+            {
+                <div class="card-footer">
+                    <a asp-action="Index" class="btn btn-ghost-muted">Back to List</a>
+                </div>
+            }
+        </div>
+    </form>
+</div>

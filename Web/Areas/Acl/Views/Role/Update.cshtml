@@ -1,0 +1,34 @@
+﻿@model Web.Areas.Acl.ViewModels.RoleEditVm
+
+@{
+    ViewData["Title"] = "Update Role";
+    Layout = "_Layout";
+}
+<form method="post" asp-action="Update" asp-controller="Role" asp-area="Acl">
+    <div class="card col-6">
+        <h3 class="card-header">Update Role</h3>
+        <div class="card-body">
+            <div class="row w-full d-flex gap-2">
+                <div class="field">
+                    <div class="form-group">
+                        <label class="form-label required" asp-for="Name"></label>
+                        <input type="text" asp-for="Name" class="form-control" required/>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                @*<div class="field">
+                    <div class="form-group">
+                        <label class="form-label" asp-for="Priority"></label>
+                        <input type="number" asp-for="Priority" class="form-control"/>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn btn-primary">Update</button>
+            <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+
+</form>

@@ -1,0 +1,305 @@
+@functions {
+    bool IsActive(string area, string controller, string action)
+    {
+        var currentArea = ViewContext.RouteData.Values["area"]?.ToString() ?? "";
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+        if (string.IsNullOrEmpty(currentAction)) currentAction = "Index";
+        if (string.IsNullOrEmpty(action)) action = "Index";
+
+        return string.Equals(currentArea, area, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+    }
+
+    string ActiveClass(string area, string controller, string action)
+    {
+        return IsActive(area, controller, action) ? "active" : "";
+    }
+
+    string MenuOpenClass(params (string area, string controller, string action)[] items)
+    {
+        foreach (var item in items)
+        {
+            if (IsActive(item.area, item.controller, item.action))
+                return "menu-open";
+        }
+        return "";
+    }
+}
+
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+    <div class="sidebar-brand">
+        <a href="/" class="brand-link">
+            <span class="brand-text fw-light">
+                <h3 class="text-white mb-0">Consign Matrix</h3>
+            </span>
+        </a>
+    </div>
+
+    <div class="sidebar-wrapper">
+        <nav class="mt-2">
+            <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
+
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="/" class="nav-link @ActiveClass("Admin", "Home", "Index")">
+                        <i class="nav-icon fa-solid fa-gauge"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+
+                <!-- Consignment -->
+                <li class="nav-item @MenuOpenClass(
+                    ("Consignment", "Customer", "Create"),
+                    ("Consignment", "Customer", "Index"),
+                    ("Consignment", "Consignment", "Create"),
+                    ("Consignment", "Consignment", "Index"),
+                    ("Consignment", "PickupTask", "Index"),
+                    ("Consignment", "BranchOperation", "Index"),
+                    ("Consignment", "Trip", "Index"))">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fa-solid fa-box"></i>
+                        <p>
+                            Consignment
+                            <i class="nav-arrow fa fa-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <!-- Customer sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Consignment", "Customer", "Create"),
+                            ("Consignment", "Customer", "Index"))">
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <p>
+                                    Customer
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Customer", new { Area = "Consignment" })"
+                                       class="nav-link @ActiveClass("Consignment", "Customer", "Create")">
+                                        <p>Add Customer</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Customer", new { Area = "Consignment" })"
+                                       class="nav-link @ActiveClass("Consignment", "Customer", "Index")">
+                                        <p>List</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- Consignment sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Consignment", "Consignment", "Create"),
+                            ("Consignment", "Consignment", "Index"))">
+                            <a href="#" class="nav-link">
+                                <p>
+                                    Consignment
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Consignment", new { Area = "Consignment" })"
+                                       class="nav-link @ActiveClass("Consignment", "Consignment", "Create")">
+                                        <p>Add Consignment</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Consignment", new { Area = "Consignment" })"
+                                       class="nav-link @ActiveClass("Consignment", "Consignment", "Index")">
+                                        <p>List</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- Pickup Operations (single link) -->
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "PickupTask", new { Area = "Consignment" })"
+                               class="nav-link @ActiveClass("Consignment", "PickupTask", "Index")">
+                                <p>Pickup Operations</p>
+                            </a>
+                        </li>
+                        <!-- Branch Operations (single link) -->
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "BranchOperation", new { Area = "Consignment" })"
+                               class="nav-link @ActiveClass("Consignment", "BranchOperation", "Index")">
+                                <p>Branch Operations</p>
+                            </a>
+                        </li>
+                        <!-- Trip Management (single link) -->
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Trip", new { Area = "Consignment" })"
+                               class="nav-link @ActiveClass("Consignment", "Trip", "Index")">
+                                <p>Trip Management</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- General Setup -->
+                <li class="nav-item @MenuOpenClass(
+                    ("Admin", "Employee", "Create"),
+                    ("Admin", "Employee", "Index"),
+                    ("Admin", "Driver", "Index"),
+                    ("Admin", "Vehicle", "Create"),
+                    ("Admin", "Vehicle", "Index"),
+                    ("Admin", "VehicleAssignment", "Index"))">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fa-solid fa-gears"></i>
+                        <p>
+                            General Setup
+                            <i class="nav-arrow fa fa-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <!-- Employee sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Admin", "Employee", "Create"),
+                            ("Admin", "Employee", "Index"),
+                            ("Admin", "Driver", "Index"))">
+                            <a href="#" class="nav-link">
+                                <p>
+                                    Employee
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Employee", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Employee", "Create")">
+                                        <p>Add Employee</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Employee", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Employee", "Index")">
+                                        <p>Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Driver", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Driver", "Index")">
+                                        <p>Drivers</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- Vehicle sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Admin", "Vehicle", "Create"),
+                            ("Admin", "Vehicle", "Index"),
+                            ("Admin", "VehicleAssignment", "Index"))">
+                            <a href="#" class="nav-link">
+                                <p>
+                                    Vehicle
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Vehicle", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Vehicle", "Create")">
+                                        <p>Add Vehicle</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "Vehicle", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Vehicle", "Index")">
+                                        <p>Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "VehicleAssignment", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "VehicleAssignment", "Index")">
+                                        <p>Assignment</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Administration -->
+                <li class="nav-item @MenuOpenClass(
+                    ("Admin", "User", "Create"),
+                    ("Admin", "User", "Index"),
+                    ("Admin", "Branch", "Create"),
+                    ("Admin", "Branch", "Report"),
+                    ("Admin", "BranchPinCode", "Report"))">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon fa-solid fa-user-shield"></i>
+                        <p>
+                            Administration
+                            <i class="nav-arrow fa fa-chevron-right"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        <!-- User Management sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Admin", "User", "Create"),
+                            ("Admin", "User", "Index"))">
+                            <a href="#" class="nav-link">
+                                <p>
+                                    User Management
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "User", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "User", "Create")">
+                                        <p>Add User</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Index", "User", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "User", "Index")">
+                                        <p>User Report</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <!-- Branch sub-group -->
+                        <li class="nav-item @MenuOpenClass(
+                            ("Admin", "Branch", "Create"),
+                            ("Admin", "Branch", "Report"),
+                            ("Admin", "BranchPinCode", "Report"))">
+                            <a href="#" class="nav-link">
+                                <p>
+                                    Branch
+                                    <i class="nav-arrow fa fa-chevron-right"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Create", "Branch", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Branch", "Create")">
+                                        <p>Add Branch</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Report", "Branch", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "Branch", "Report")">
+                                        <p>Branch Report</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="@Url.Action("Report", "BranchPinCode", new { Area = "Admin" })"
+                                       class="nav-link @ActiveClass("Admin", "BranchPinCode", "Report")">
+                                        <p>Branch Pin Codes</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
+</aside>

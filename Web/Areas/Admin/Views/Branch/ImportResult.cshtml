@@ -1,0 +1,75 @@
+@model Web.Areas.Admin.ViewModels.BranchImportResultVm
+
+@{
+    ViewBag.Title = "Import Result";
+}
+
+<div class="container-xl">
+    <div class="card">
+        <h3 class="card-header">Import Result</h3>
+
+        <div class="card-body">
+            @if (Model.Success)
+            {
+                <div class="alert alert-success">
+                    <h4 class="alert-title">
+                        <i class="fa fa-check-circle me-2"></i>Import Successful!
+                    </h4>
+                    <p class="mb-0">
+                        Successfully imported <strong>@Model.SuccessCount</strong> out of <strong>@Model.TotalRows</strong> branches.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    <h4 class="alert-title">
+                        <i class="fa fa-exclamation-circle me-2"></i>Import Failed
+                    </h4>
+                    <p>Found <strong>@Model.Errors.Count</strong> error(s). Please fix them and try again.</p>
+                </div>
+
+                <div class="table-responsive mt-3">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="100">Row Number</th>
+                                <th>Error Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var error in Model.Errors)
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        @if (error.RowNumber > 0)
+                                        {
+                                            <span class="badge bg-danger">Row @error.RowNumber</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-dark">System</span>
+                                        }
+                                    </td>
+                                    <td>@error.ErrorMessage</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="card-footer">
+            <a asp-action="Report" class="btn btn-primary">
+                <i class="fa fa-list me-1"></i> Back to Branch Report
+            </a>
+            @if (!Model.Success)
+            {
+                <a asp-action="Import" class="btn btn-info">
+                    <i class="fa fa-redo me-1"></i> Try Again
+                </a>
+            }
+        </div>
+    </div>
+</div>

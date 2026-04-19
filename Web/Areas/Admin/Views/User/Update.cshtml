@@ -1,0 +1,67 @@
+﻿@model Web.Areas.Admin.ViewModels.UserEditVm
+
+@{
+    ViewData["Title"] = "Update User";
+    Layout = "_Layout";
+}
+
+
+<form method="post" asp-action="Update" asp-controller="User" asp-area="Admin">
+    <div class="card col-5">
+        <h3 class="card-header">Update User</h3>
+        <div class="card-body">
+            <div class="row w-full">
+                <div class="d-flex flex-column gap-2">
+                    <div class="field" hidden>
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Id"></label>
+                            <input type="text" asp-for="Id" class="form-control" required/>
+                            <span asp-validation-for="Id" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Name"></label>
+                            <input type="text" asp-for="Name" class="form-control" required/>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Address"></label>
+                            <input type="text" asp-for="Address" class="form-control" required/>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="ContactNo"></label>
+                            <input type="text" asp-for="ContactNo" class="form-control"/>
+                            <span asp-validation-for="ContactNo" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="form-group">
+                            <label class="form-label required" asp-for="Email"></label>
+                            <input type="email" asp-for="Email" class="form-control" required/>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="field mt-2">
+                        <div class="form-group">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" asp-for="IsActive" class="form-check-input"/>
+                                <label class="form-check-label" asp-for="IsActive">Active</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn btn-primary">Update</button>
+            <a asp-action="Index" class="btn btn-ghost-muted">Discard</a>
+        </div>
+    </div>
+
+</form>

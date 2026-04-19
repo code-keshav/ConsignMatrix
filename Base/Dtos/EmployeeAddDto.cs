@@ -1,0 +1,30 @@
+using Base.Enum;
+
+namespace Base.Dtos;
+
+public class EmployeeAddDto
+{
+    public string EmployeeCode { get; set; }
+    public string Name { get; set; }
+    public string Phone { get; set; }
+    public string? AlternatePhone { get; set; }
+    public string? Email { get; set; }
+    public string? Address { get; set; }
+    public EmployeeType EmployeeType { get; set; }
+    public EmployeeStatus EmployeeStatus { get; set; } = EmployeeStatus.Active;
+    public DateTime JoiningDate { get; set; }
+    public string? Department { get; set; }
+    public string? Designation { get; set; }
+    public long CurrentBranchId { get; set; }
+
+    // Optional User account creation
+    public bool CreateUserAccount { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
+    public string? ConfirmPassword { get; set; }
+
+
+    // Driver fields (when EmployeeType == Driver)
+    public string? LicenseNumber { get; set; }
+    public DateTime? LicenseExpiry { get; set; }
+}

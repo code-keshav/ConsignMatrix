@@ -1,0 +1,663 @@
+[
+  {
+    "Name": "Branch",
+    "Type": "Group",
+    "DisplayName": "Branch",
+    "Children": [
+      {
+        "Name": "CreateBranch",
+        "DisplayName": "Create",
+        "Resource": "Branch_Create",
+        "Url": "/Admin/Branch/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "BranchReport",
+        "DisplayName": "Report",
+        "Resource": "Branch_Report",
+        "Url": "/Admin/Branch/Report",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateBranch",
+        "DisplayName": "Update",
+        "Resource": "Branch_Update",
+        "Url": "/Admin/Branch/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "User",
+    "Type": "Group",
+    "DisplayName": "User",
+    "Children": [
+      {
+        "Name": "CreateUser",
+        "DisplayName": "Create",
+        "Resource": "User_Create",
+        "Url": "/Admin/User/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UserReport",
+        "DisplayName": "Report",
+        "Resource": "User_Report",
+        "Url": "/Admin/User/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateUser",
+        "DisplayName": "Update",
+        "Resource": "User_Update",
+        "Url": "/Admin/User/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "DeleteUser",
+        "DisplayName": "Delete",
+        "Resource": "User_Delete",
+        "Url": "/Admin/User/Delete",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "ChangePassword",
+        "DisplayName": "Change Password",
+        "Resource": "User_ChangePassword",
+        "Url": "/Admin/User/ChangePassword",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "ResetPassword",
+        "DisplayName": "Reset Password",
+        "Resource": "User_ResetPassword",
+        "Url": "/Admin/User/ResetPassword",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "TransferUser",
+        "DisplayName": "Transfer User",
+        "Resource": "User_Transfer",
+        "Url": "/Admin/UserBranchTransfer/RequestTransfer",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Role",
+    "Type": "Group",
+    "DisplayName": "Role",
+    "Children": [
+      {
+        "Name": "CreateRole",
+        "DisplayName": "Create",
+        "Resource": "Role_Create",
+        "Url": "/Acl/Role/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "RoleReport",
+        "DisplayName": "Report",
+        "Resource": "Role_Report",
+        "Url": "/Acl/Role/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateRole",
+        "DisplayName": "Update",
+        "Resource": "Role_Update",
+        "Url": "/Acl/Role/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "MarkAsGlobal",
+        "DisplayName": "Mark As Global",
+        "Resource": "Role_MarkAsGlobal",
+        "Url": "/Acl/Role/MarkAsGlobal",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UnmarkAsGlobal",
+        "DisplayName": "Unmark As Global",
+        "Resource": "Role_UnmarkAsGlobal",
+        "Url": "/Acl/Role/UnmarkAsGlobal",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Employee",
+    "Type": "Group",
+    "DisplayName": "Employee",
+    "Children": [
+      {
+        "Name": "CreateEmployee",
+        "DisplayName": "Create",
+        "Resource": "Employee_Create",
+        "Url": "/Admin/Employee/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "EmployeeReport",
+        "DisplayName": "Report",
+        "Resource": "Employee_Report",
+        "Url": "/Admin/Employee/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateEmployee",
+        "DisplayName": "Update",
+        "Resource": "Employee_Update",
+        "Url": "/Admin/Employee/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "DeleteEmployee",
+        "DisplayName": "Delete",
+        "Resource": "Employee_Delete",
+        "Url": "/Admin/Employee/Delete",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Vehicle",
+    "Type": "Group",
+    "DisplayName": "Vehicle",
+    "Children": [
+      {
+        "Name": "CreateVehicle",
+        "DisplayName": "Create",
+        "Resource": "Vehicle_Create",
+        "Url": "/Admin/Vehicle/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "VehicleReport",
+        "DisplayName": "Report",
+        "Resource": "Vehicle_Report",
+        "Url": "/Admin/Vehicle/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateVehicle",
+        "DisplayName": "Update",
+        "Resource": "Vehicle_Update",
+        "Url": "/Admin/Vehicle/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "DeleteVehicle",
+        "DisplayName": "Delete",
+        "Resource": "Vehicle_Delete",
+        "Url": "/Admin/Vehicle/Delete",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Driver",
+    "Type": "Group",
+    "DisplayName": "Driver",
+    "Children": [
+      {
+        "Name": "DriverReport",
+        "DisplayName": "Report",
+        "Resource": "Driver_Report",
+        "Url": "/Admin/Driver/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateDriver",
+        "DisplayName": "Update",
+        "Resource": "Driver_Update",
+        "Url": "/Admin/Driver/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "VehicleAssignment",
+    "Type": "Group",
+    "DisplayName": "Vehicle Assignment",
+    "Children": [
+      {
+        "Name": "CreateVehicleAssignment",
+        "DisplayName": "Create",
+        "Resource": "VehicleAssignment_Create",
+        "Url": "/Admin/VehicleAssignment/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "VehicleAssignmentReport",
+        "DisplayName": "Report",
+        "Resource": "VehicleAssignment_Report",
+        "Url": "/Admin/VehicleAssignment/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateVehicleAssignment",
+        "DisplayName": "Update",
+        "Resource": "VehicleAssignment_Update",
+        "Url": "/Admin/VehicleAssignment/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "RemoveVehicleAssignment",
+        "DisplayName": "Remove",
+        "Resource": "VehicleAssignment_Remove",
+        "Url": "/Admin/VehicleAssignment/Remove",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "AccountGroup",
+    "Type": "Group",
+    "DisplayName": "Account Group",
+    "Children": [
+      {
+        "Name": "CreateAccountGroup",
+        "DisplayName": "Create",
+        "Resource": "AG_Create",
+        "Url": "/qb/AccountGroup/Index",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "AccountGroupReport",
+        "DisplayName": "Report",
+        "Resource": "AG_Report",
+        "Url": "/qb/AccountGroup/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateAccountGroup",
+        "DisplayName": "Update",
+        "Resource": "AG_Update",
+        "Url": "/qb/AccountGroup/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "BankGuaranteeType",
+    "Type": "Group",
+    "DisplayName": "Bank Guarantee Type",
+    "Children": [
+      {
+        "Name": "CreateBankGuarantee",
+        "DisplayName": "Create",
+        "Resource": "BGT_Create",
+        "Url": "/qb/BankGuaranteeType/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "BankGuaranteeTypeReport",
+        "DisplayName": "Report",
+        "Resource": "BGT_Report",
+        "Url": "/qb/BankGuaranteeType/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "BankGuarantee",
+    "Type": "Group",
+    "DisplayName": "Bank Guarantee",
+    "Children": [
+      {
+        "Name": "CreateBankGuarantee",
+        "DisplayName": "Create",
+        "Resource": "BG_Create",
+        "Url": "/qb/BankGuarantee/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "BankGuaranteeReport",
+        "DisplayName": "Report",
+        "Resource": "BG_Report",
+        "Url": "/qb/BankGuarantee/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateBankGuarantee",
+        "DisplayName": "Update",
+        "Resource": "BG_Update",
+        "Url": "/qb/BankGuarantee/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Consignment",
+    "Type": "Group",
+    "DisplayName": "Consignment",
+    "Children": [
+      {
+        "Name": "ConsignmentReport",
+        "DisplayName": "Report",
+        "Resource": "Consignment_Report",
+        "Url": "/Consignment/Consignment/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "CreateConsignment",
+        "DisplayName": "Create",
+        "Resource": "Consignment_Create",
+        "Url": "/Consignment/Consignment/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateConsignment",
+        "DisplayName": "Update",
+        "Resource": "Consignment_Update",
+        "Url": "/Consignment/Consignment/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "DeleteConsignment",
+        "DisplayName": "Delete",
+        "Resource": "Consignment_Delete",
+        "Url": "/Consignment/Consignment/Delete",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "ConsignmentDetail",
+        "DisplayName": "Detail",
+        "Resource": "Consignment_Detail",
+        "Url": "/Consignment/Consignment/Detail",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Package",
+    "Type": "Group",
+    "DisplayName": "Package",
+    "Children": [
+      {
+        "Name": "AddPackage",
+        "DisplayName": "Add",
+        "Resource": "Package_Add",
+        "Url": "/Consignment/Package/AddPackage",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdatePackage",
+        "DisplayName": "Update",
+        "Resource": "Package_Update",
+        "Url": "/Consignment/Package/Update",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "DeletePackage",
+        "DisplayName": "Delete",
+        "Resource": "Package_Delete",
+        "Url": "/Consignment/Package/Delete",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Pickup",
+    "Type": "Group",
+    "DisplayName": "Pickup Operations",
+    "Children": [
+      {
+        "Name": "PickupReport",
+        "DisplayName": "Report",
+        "Resource": "Pickup_Report",
+        "Url": "/Consignment/PickupTask/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "CreatePickup",
+        "DisplayName": "Create",
+        "Resource": "Pickup_Create",
+        "Url": "/Consignment/PickupTask/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "AssignPickup",
+        "DisplayName": "Assign",
+        "Resource": "Pickup_Assign",
+        "Url": "/Consignment/PickupTask/Assign",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "CompletePickup",
+        "DisplayName": "Complete",
+        "Resource": "Pickup_Complete",
+        "Url": "/Consignment/PickupTask/Complete",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdatePickup",
+        "DisplayName": "Fail/Cancel",
+        "Resource": "Pickup_Update",
+        "Url": "/Consignment/PickupTask/Fail",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "BranchOperations",
+    "Type": "Group",
+    "DisplayName": "Branch Operations",
+    "Children": [
+      {
+        "Name": "BranchOperationReport",
+        "DisplayName": "Dashboard",
+        "Resource": "BranchOp_Report",
+        "Url": "/Consignment/BranchOperation/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "InwardScan",
+        "DisplayName": "Inward Scan",
+        "Resource": "BranchOp_Inward",
+        "Url": "/Consignment/BranchOperation/ReceiveConsignment",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "SortConsignment",
+        "DisplayName": "Sort",
+        "Resource": "BranchOp_Sort",
+        "Url": "/Consignment/BranchOperation/SortConsignment",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "BagConsignment",
+        "DisplayName": "Bag",
+        "Resource": "BranchOp_Bag",
+        "Url": "/Consignment/BranchOperation/BagConsignment",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Trip",
+    "Type": "Group",
+    "DisplayName": "Trip Management",
+    "Children": [
+      {
+        "Name": "TripReport",
+        "DisplayName": "Report",
+        "Resource": "Trip_Report",
+        "Url": "/Consignment/Trip/Index",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "CreateTrip",
+        "DisplayName": "Create",
+        "Resource": "Trip_Create",
+        "Url": "/Consignment/Trip/Create",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "UpdateTrip",
+        "DisplayName": "Start / Complete / Cancel",
+        "Resource": "Trip_Update",
+        "Url": "/Consignment/Trip/Start",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "ReceiveTrip",
+        "DisplayName": "Receive & Verify",
+        "Resource": "Trip_Receive",
+        "Url": "/Consignment/Trip/ReceiveItem",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  },
+  {
+    "Name": "Delivery",
+    "Type": "Group",
+    "DisplayName": "Delivery",
+    "Children": [
+      {
+        "Name": "DeliveryReport",
+        "DisplayName": "Ready for Delivery",
+        "Resource": "Delivery_Report",
+        "Url": "/Consignment/BranchOperation/GetReadyForDeliveryConsignments",
+        "Method": "HttpGet",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "MarkDelivered",
+        "DisplayName": "Mark Delivered",
+        "Resource": "Delivery_Complete",
+        "Url": "/Consignment/Trip/MarkDelivered",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      },
+      {
+        "Name": "MarkDeliveryFailed",
+        "DisplayName": "Mark Delivery Failed",
+        "Resource": "Delivery_Fail",
+        "Url": "/Consignment/Trip/MarkDeliveryFailed",
+        "Method": "HttpPost",
+        "Type": "Permission",
+        "Children": []
+      }
+    ]
+  }
+]

@@ -1,0 +1,98 @@
+@model System.Collections.Generic.List<Web.Areas.Admin.Responses.BranchReportResponse>
+@using Base.Enum
+
+@{
+    ViewBag.Title = "Branch Report";
+}
+
+<div class="">
+    <div class="mt-2">
+        <div class="d-flex justify-content-between align-items-end mb-1">
+            <span class="header_text">Branch</span>
+            <div class="d-flex gap-2">
+                <a asp-area="Admin" asp-controller="Branch" asp-action="Import" class="btn btn-info btn-sm">
+                    <i class="fa fa-file-excel me-1"></i> Import Excel
+                </a>
+                <a asp-area="Admin" asp-controller="Branch" asp-action="Create" class="btn btn-primary btn-sm">
+                    <i class="fa fa-plus me-1"></i> Create
+                </a>
+            </div>
+        </div>
+    </div>
+    <table class="table table-responsive table_bold table-bordered">
+        <thead>
+        <th>SN</th>
+        <th>Name</th>
+        <th>Code</th>
+        <th>Type</th>
+        <th>City</th>
+        <th>Address</th>
+        <th>Contact No</th>
+        <th>Email</th>
+        <th>Users</th>
+        <th>Pin Codes</th>
+        <th>Action</th>
+        </thead>
+        <tbody>
+        @{
+            var count = 0;
+            foreach (var item in Model)
+            {
+
+                <tr>
+                    <td>@(++count)</td>
+                    <td>@item.Name</td>
+                    <td>@item.Code</td>
+                    <td>
+                        @if (item.BranchType == BranchType.Hub)
+                        {
+                            <span class="badge bg-primary">Hub</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Service Center</span>
+                        }
+                    </td>
+                    <td>@item.City</td>
+                    <td>@item.Address</td>
+                    <td>@item.ContactNo</td>
+                    <td>@item.Email</td>
+                    <td class="text-center">
+                        @if (item.UserCount > 0)
+                        {
+                            <span class="badge bg-info">@item.UserCount</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">0</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (item.PinCodeCount > 0)
+                        {
+                            <span class="badge bg-info">@item.PinCodeCount</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">0</span>
+                        }
+                    </td>
+                    <td>
+                        <a class="text-decoration-none" href="@Url.Action("Update", new { Id = item.Id })">
+                            <i class="fa fa-edit me-1"></i>Edit
+                        </a>
+                        @if (item.UserCount == 0)
+                        {
+                            <span class="mx-1">|</span>
+                            <a class="text-decoration-none text-danger" href="@Url.Action("Delete", new { Id = item.Id })"
+                               onclick="return confirm('Are you sure you want to delete branch \'@item.Name\'? This action cannot be undone.');">
+                                <i class="fa fa-trash me-1"></i>Delete
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,292 @@
+@using Base.Constants
+@model Web.Areas.Admin.ViewModels.UserWithRolesVm
+
+@{
+    ViewData["Title"] = "Users";
+    Layout = "_Layout";
+}
+
+<style>
+    .role-dropdown {
+        z-index: 9999 !important;
+    }
+</style>
+
+<div class="">
+    <div class="mt-2">
+        <div class="d-flex justify-content-between align-items-end mb-3">
+            <span class="header_text">Users</span>
+            <div class="d-flex gap-2">
+                <a asp-area="Admin" asp-controller="User" asp-action="Import" class="btn btn-info btn-sm">
+                    <i class="fa fa-file-excel me-1"></i> Import Excel
+                </a>
+                <a asp-area="Admin" asp-controller="User" asp-action="Create" class="btn btn-primary btn-sm">
+                    Create
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Filter Users</h6>
+            </div>
+            <div class="card-body">
+                <form asp-area="Admin" asp-controller="User" asp-action="Index" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label asp-for="SearchTerm" class="form-label">Search</label>
+                            <input asp-for="SearchTerm" class="form-control" placeholder="Name, Email, or Contact"/>
+                        </div>
+
+                        @if (Model.IsMainBranchUser)
+                        {
+                            <div class="col-md-2">
+                                <label asp-for="BranchId" class="form-label">Branch</label>
+                                <select asp-for="BranchId" class="form-control select2" asp-items="@Model.BranchSelectList">
+                                    <option value="">All Branches</option>
+                                </select>
+                            </div>
+                        }
+
+                        <div class="col-md-2">
+                            <label asp-for="RoleId" class="form-label">Role</label>
+                            <select asp-for="RoleId" class="form-control" asp-items="@Model.RoleSelectList">
+                                <option value="">All Roles</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label asp-for="UserLevel" class="form-label">User Level</label>
+                            <select asp-for="UserLevel" class="form-control" asp-items="@Model.UserLevelSelectList">
+                                <option value="">All Levels</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary btn-sm me-2">
+                                <i class="fa fa-search"></i> Search
+                            </button>
+                            <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn btn-sm btn-secondary">
+                                <i class="fa fa-redo"></i> Reset
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="mb-2">
+            <p class="text-muted">
+                Showing @((Model.CurrentPage - 1) * Model.PageSize + 1) to @Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount) of @Model.TotalCount users
+            </p>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="">
+        <table class="table table_bold table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>SN</th>
+                <th>Branch Code</th>
+                <th>Branch Name</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Contact No</th>
+                <th>User Level</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (Model.Users.Any())
+            {
+                var serialNumber = (Model.CurrentPage - 1) * Model.PageSize;
+                foreach (var item in Model.Users)
+                {
+                    serialNumber++;
+                    <tr>
+                        <td>@serialNumber</td>
+                        <td>@item.BranchCode</td>
+                        <td>@item.BranchName</td>
+                        <td>@item.Name</td>
+                        <td>@item.Email</td>
+                        <td>@item.ContactNo</td>
+                        <td>
+                            @if (item.UserLevelDisplay == "SuperAdmin")
+                            {
+                                <span class="badge bg-danger">@item.UserLevelDisplay</span>
+                            }
+                            else if (item.UserLevelDisplay == "Admin")
+                            {
+                                <span class="badge bg-warning">@item.UserLevelDisplay</span>
+                            }
+                            else if (item.UserLevelDisplay == "BranchAdmin")
+                            {
+                                <span class="badge bg-info">@item.UserLevelDisplay</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@item.UserLevelDisplay</span>
+                            }
+                        </td>
+                        <td>@item.Role</td>
+                        <td>
+                            @if (item.IsActive)
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive</span>
+                            }
+                        </td>
+                        <td>
+                            @if (item.Id != (long)IdConstants.MainUserId)
+                            {
+                                <a class="text-info text-decoration-none" asp-action="Update" asp-route-id="@item.Id">Edit</a>
+                                <span>|</span>
+                                <a class="text-danger text-decoration-none req-confirm" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                            }
+                            <div class="dropdown d-inline" role="group">
+                                <button class="btn btn-ghost-linkedin btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Actions
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="text-decoration-none cursor-pointer dropdown-item" data-bs-toggle="modal" data-bs-target="#modal-simple"
+                                           data-user-name="@item.Name" data-user-userId="@item.Id" data-user-roleids="@string.Join(",", item.RoleIds)">Assign Role</a>
+                                    </li>
+                                    
+                                    @if (item.IsAdmin || item.IsSuperAdmin)
+                                    {
+                                        <li>
+                                            <a class="text-decoration-none dropdown-item" asp-controller="User" asp-action="ResetPassword" asp-route-id="@item.Id">Reset Password</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="10" class="text-center">No users found</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="?page=@(Model.CurrentPage - 1)&searchTerm=@Model.SearchTerm&branchId=@Model.BranchId&roleId=@Model.RoleId&userLevel=@Model.UserLevel">Previous</a>
+                </li>
+
+                @for (var i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="?page=@i&searchTerm=@Model.SearchTerm&branchId=@Model.BranchId&roleId=@Model.RoleId&userLevel=@Model.UserLevel">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="?page=@(Model.CurrentPage + 1)&searchTerm=@Model.SearchTerm&branchId=@Model.BranchId&roleId=@Model.RoleId&userLevel=@Model.UserLevel">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
+
+<!-- Assign Role Modal -->
+<form method="post" asp-area="Acl" asp-controller="UserRole" asp-action="AssignRole">
+    <div class="modal modal-blur fade" id="modal-simple" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="w-full d-flex flex-column gap-2">
+                        <div class="field" hidden>
+                            <div class="form-group">
+                                <label class="form-label required">User Id</label>
+                                <input type="text" class="userId" name="UserId" required/>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required">User</label>
+                                <input type="text" class="form-control userName" required disabled/>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="form-group">
+                                <label class="form-label required">Role</label>
+                                <select name="roleIds" asp-items="@Model.RoleSelectList"
+                                        class="form-control select2"
+                                        multiple
+                                        id="role-select"
+                                        style="width: 100%">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn me-auto" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" onclick="">Assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize select2 for branch filter
+            @if (Model.IsMainBranchUser)
+            {
+                <text>
+                    $('.select2').select2({
+                        placeholder: "Select Branch",
+                        allowClear: true,
+                        width: '100%'
+                    });
+                </text>
+            }
+
+            const modal = document.getElementById('modal-simple');
+            modal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                const name = button.getAttribute('data-user-name');
+                const userId = button.getAttribute('data-user-userId');
+                const roleIds = button.getAttribute('data-user-roleids');
+                const roleIdsArray = roleIds == "" ? [] : roleIds.split(',');
+
+                modal.querySelector('.userName').value = name;
+                modal.querySelector('.userId').value = userId;
+
+                $('#role-select').select2({
+                    placeholder: "Select Roles",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownCssClass: "role-dropdown",
+                });
+                $('#role-select').val(roleIdsArray).trigger('change');
+            });
+        });
+    </script>
+}
